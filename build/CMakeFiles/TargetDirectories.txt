@@ -1,0 +1,5 @@
+/home/visage/Рабочий стол/WG_radius/build/CMakeFiles/wg_radius_domain.dir
+/home/visage/Рабочий стол/WG_radius/build/CMakeFiles/wg_radius_domain_tests.dir
+/home/visage/Рабочий стол/WG_radius/build/CMakeFiles/test.dir
+/home/visage/Рабочий стол/WG_radius/build/CMakeFiles/edit_cache.dir
+/home/visage/Рабочий стол/WG_radius/build/CMakeFiles/rebuild_cache.dir

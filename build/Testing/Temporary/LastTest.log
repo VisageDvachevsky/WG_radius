@@ -1,0 +1,31 @@
+Start testing: Mar 16 16:45 MSK
+----------------------------------------------------------
+1/1 Testing: wg_radius_domain_tests
+1/1 Test: wg_radius_domain_tests
+Command: "/home/visage/Рабочий стол/WG_radius/build/wg_radius_domain_tests"
+Directory: /home/visage/Рабочий стол/WG_radius/build
+"wg_radius_domain_tests" start time: Mar 16 16:45 MSK
+Output:
+----------------------------------------------------------
+[PASS] peer_appearance_mode_requests_authorization_immediately
+[PASS] first_handshake_mode_waits_until_handshake
+[PASS] access_accept_authorizes_session_and_starts_accounting
+[PASS] access_reject_can_block_peer
+[PASS] access_reject_can_terminate_peer
+[PASS] termination_stops_accounting_for_authorized_session
+[PASS] session_manager_requests_auth_on_peer_appearance_mode
+[PASS] session_manager_requests_auth_on_first_handshake_mode
+[PASS] session_manager_starts_accounting_on_access_accept
+[PASS] session_manager_removes_peer_on_reject_in_remove_mode
+[PASS] session_manager_blocks_peer_on_reject_in_block_mode
+[PASS] session_manager_stops_accounting_when_authorized_peer_is_removed
+[PASS] session_manager_ignores_duplicate_handshake_after_auth_started
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"wg_radius_domain_tests" end time: Mar 16 16:45 MSK
+"wg_radius_domain_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Mar 16 16:45 MSK

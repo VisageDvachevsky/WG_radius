@@ -1,0 +1,2 @@
+/usr/bin/ar qc libwg_radius_domain.a CMakeFiles/wg_radius_domain.dir/src/domain/peer_session.cpp.o CMakeFiles/wg_radius_domain.dir/src/domain/session_manager.cpp.o
+/usr/bin/ranlib libwg_radius_domain.a

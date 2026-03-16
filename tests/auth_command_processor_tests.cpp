@@ -6,6 +6,16 @@ using namespace wg_radius;
 
 namespace {
 
+const radius::RadiusProfile kRadiusProfile{
+    .auth_server = {"127.0.0.1", 1812},
+    .accounting_server = {"127.0.0.1", 1813},
+    .shared_secret = "secret",
+    .timeout = std::chrono::seconds{5},
+    .retries = 3,
+    .nas_identifier = "wg-main",
+    .nas_ip_address = std::string{"192.0.2.1"},
+};
+
 template <typename T>
 concept HasEndpoint = requires(T value) {
     value.endpoint;
@@ -45,6 +55,12 @@ public:
     radius::AuthorizationRequest last_request{
         .interface_name = {},
         .peer_public_key = {},
+        .endpoint = std::nullopt,
+        .allowed_ips = {},
+        .nas_identifier = {},
+        .nas_ip_address = std::nullopt,
+        .calling_station_id = {},
+        .user_name = {},
     };
     int authorize_calls{0};
 
@@ -52,6 +68,11 @@ public:
         last_request = request;
         ++authorize_calls;
         return next_response;
+    }
+
+    bool account(const radius::AccountingRequest& request) override {
+        (void)request;
+        return true;
     }
 };
 
@@ -62,7 +83,7 @@ TEST_CASE(auth_processor_ignores_non_auth_commands) {
         domain::AuthorizationTrigger::OnPeerAppearance,
         domain::RejectMode::RemovePeer};
     FakeRadiusClient radius_client;
-    application::AuthCommandProcessor processor{"wg0", manager, radius_client};
+    application::AuthCommandProcessor processor{"wg0", kRadiusProfile, manager, radius_client};
 
     const auto result = processor.process({
         .type = domain::CommandType::RemovePeer,
@@ -89,21 +110,38 @@ TEST_CASE(auth_processor_accept_turns_access_request_into_policy_and_accounting_
             .session_timeout = std::chrono::seconds{3600},
         },
     };
-    application::AuthCommandProcessor processor{"wg0", manager, radius_client};
+    application::AuthCommandProcessor processor{"wg0", kRadiusProfile, manager, radius_client};
 
-    EXPECT_EQ(manager.on_peer_observed("peer-a").size(), 1U);
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::string{"198.51.100.10:12345"}, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
 
     const auto result = processor.process({
         .type = domain::CommandType::SendAccessRequest,
         .peer_public_key = "peer-a",
         .accounting_session_id = std::nullopt,
         .policy = std::nullopt,
+        .authorization_context =
+            domain::AuthorizationContext{
+                .endpoint = std::string{"198.51.100.10:12345"},
+                .allowed_ips = {"10.0.0.2/32"},
+            },
     });
 
     EXPECT_EQ(result.status, application::AuthProcessingStatus::Processed);
     EXPECT_EQ(radius_client.authorize_calls, 1);
     EXPECT_EQ(radius_client.last_request.interface_name, "wg0");
     EXPECT_EQ(radius_client.last_request.peer_public_key, "peer-a");
+    EXPECT_EQ(radius_client.last_request.endpoint, std::optional<std::string>{"198.51.100.10:12345"});
+    EXPECT_EQ(radius_client.last_request.allowed_ips.size(), 1U);
+    EXPECT_EQ(radius_client.last_request.allowed_ips.front(), "10.0.0.2/32");
+    EXPECT_EQ(radius_client.last_request.nas_identifier, "wg-main");
+    EXPECT_EQ(radius_client.last_request.nas_ip_address, std::optional<std::string>{"192.0.2.1"});
+    EXPECT_EQ(radius_client.last_request.calling_station_id, "peer-a");
+    EXPECT_EQ(radius_client.last_request.user_name, "peer-a");
     EXPECT_EQ(result.follow_up_commands.size(), 2U);
     EXPECT_EQ(result.follow_up_commands.at(0).type, domain::CommandType::ApplySessionPolicy);
     EXPECT_EQ(result.follow_up_commands.at(1).type, domain::CommandType::StartAccounting);
@@ -119,9 +157,14 @@ TEST_CASE(auth_processor_reject_turns_access_request_into_remove_peer) {
         .decision = radius::AuthorizationDecision::Reject,
         .policy = std::nullopt,
     };
-    application::AuthCommandProcessor processor{"wg0", manager, radius_client};
+    application::AuthCommandProcessor processor{"wg0", kRadiusProfile, manager, radius_client};
 
-    EXPECT_EQ(manager.on_peer_observed("peer-a").size(), 1U);
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
 
     const auto result = processor.process({
         .type = domain::CommandType::SendAccessRequest,
@@ -144,9 +187,14 @@ TEST_CASE(auth_processor_reports_failure_on_radius_error) {
         .decision = radius::AuthorizationDecision::Error,
         .policy = std::nullopt,
     };
-    application::AuthCommandProcessor processor{"wg0", manager, radius_client};
+    application::AuthCommandProcessor processor{"wg0", kRadiusProfile, manager, radius_client};
 
-    EXPECT_EQ(manager.on_peer_observed("peer-a").size(), 1U);
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
 
     const auto result = processor.process({
         .type = domain::CommandType::SendAccessRequest,
@@ -168,9 +216,14 @@ TEST_CASE(auth_processor_reports_failure_on_accept_without_policy) {
         .decision = radius::AuthorizationDecision::Accept,
         .policy = std::nullopt,
     };
-    application::AuthCommandProcessor processor{"wg0", manager, radius_client};
+    application::AuthCommandProcessor processor{"wg0", kRadiusProfile, manager, radius_client};
 
-    EXPECT_EQ(manager.on_peer_observed("peer-a").size(), 1U);
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
 
     const auto result = processor.process({
         .type = domain::CommandType::SendAccessRequest,
@@ -183,9 +236,6 @@ TEST_CASE(auth_processor_reports_failure_on_accept_without_policy) {
     EXPECT_TRUE(result.follow_up_commands.empty());
 }
 
-// TODO(stage-1/radius-request-model): re-enable when AuthorizationRequest models
-// the full WG/RADIUS context required by the spec.
-#if 0
 TEST_CASE(radius_authorization_request_must_model_wireguard_context_attributes_required_by_spec) {
     EXPECT_TRUE(HasEndpoint<radius::AuthorizationRequest>);
     EXPECT_TRUE(HasAllowedIps<radius::AuthorizationRequest>);
@@ -197,4 +247,3 @@ TEST_CASE(radius_authorization_request_must_model_calling_station_and_user_name_
     EXPECT_TRUE(HasCallingStationId<radius::AuthorizationRequest>);
     EXPECT_TRUE(HasUserName<radius::AuthorizationRequest>);
 }
-#endif

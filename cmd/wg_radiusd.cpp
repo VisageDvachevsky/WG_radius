@@ -41,17 +41,17 @@ struct RuntimeContext {
     wg_radius::application::ProfileRuntime runtime;
 
     explicit RuntimeContext(const wg_radius::config::InterfaceProfile& profile)
-        : session_manager(profile.authorization_trigger, wg_radius::domain::RejectMode::RemovePeer),
+        : session_manager(profile.authorization_trigger, profile.reject_mode),
           wireguard_client(),
           peer_controller(),
           traffic_shaper(),
           radius_client(profile.radius_profile),
           event_router(session_manager),
           polling_coordinator(profile.interface_name, wireguard_client, event_router),
-          auth_processor(profile.interface_name, session_manager, radius_client),
+          auth_processor(profile.interface_name, profile.radius_profile, session_manager, radius_client),
           async_auth_processor(auth_processor),
-          command_executor(profile.interface_name, peer_controller, traffic_shaper),
-          runtime(polling_coordinator, async_auth_processor, command_executor) {}
+          command_executor(profile.interface_name, radius_client, peer_controller, traffic_shaper),
+          runtime(polling_coordinator, async_auth_processor, session_manager, command_executor) {}
 };
 
 }  // namespace

@@ -11,6 +11,7 @@ public:
 
     [[nodiscard]] AuthorizationResponse authorize(
         const AuthorizationRequest& request) override;
+    [[nodiscard]] bool account(const AccountingRequest& request) override;
 
 private:
     RadiusProfile profile_;

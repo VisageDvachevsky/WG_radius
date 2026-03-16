@@ -12,16 +12,24 @@ void SessionManager::on_peer_seeded(const std::string& peer_public_key, bool han
     session.seed(handshake_seen);
 }
 
-std::vector<Command> SessionManager::on_peer_observed(const std::string& peer_public_key) {
+std::vector<Command> SessionManager::on_peer_observed(
+    const std::string& peer_public_key,
+    AuthorizationContext context) {
     auto& session = get_or_create_session(peer_public_key);
     if (!session.on_peer_observed()) {
         return {};
     }
 
-    return {{.type = CommandType::SendAccessRequest, .peer_public_key = peer_public_key, .accounting_session_id = std::nullopt, .policy = std::nullopt}};
+    return {{.type = CommandType::SendAccessRequest,
+             .peer_public_key = peer_public_key,
+             .accounting_session_id = std::nullopt,
+             .policy = std::nullopt,
+             .authorization_context = std::move(context)}};
 }
 
-std::vector<Command> SessionManager::on_handshake_observed(const std::string& peer_public_key) {
+std::vector<Command> SessionManager::on_handshake_observed(
+    const std::string& peer_public_key,
+    AuthorizationContext context) {
     auto it = sessions_.find(peer_public_key);
     if (it == sessions_.end()) {
         return {};
@@ -31,7 +39,11 @@ std::vector<Command> SessionManager::on_handshake_observed(const std::string& pe
         return {};
     }
 
-    return {{.type = CommandType::SendAccessRequest, .peer_public_key = peer_public_key, .accounting_session_id = std::nullopt, .policy = std::nullopt}};
+    return {{.type = CommandType::SendAccessRequest,
+             .peer_public_key = peer_public_key,
+             .accounting_session_id = std::nullopt,
+             .policy = std::nullopt,
+             .authorization_context = std::move(context)}};
 }
 
 std::vector<Command> SessionManager::on_access_accept(
@@ -49,9 +61,17 @@ std::vector<Command> SessionManager::on_access_accept(
 
     std::vector<Command> commands;
     commands.push_back(
-        {.type = CommandType::ApplySessionPolicy, .peer_public_key = peer_public_key, .accounting_session_id = accounting_session_id, .policy = policy});
+        {.type = CommandType::ApplySessionPolicy,
+         .peer_public_key = peer_public_key,
+         .accounting_session_id = accounting_session_id,
+         .policy = policy,
+         .authorization_context = std::nullopt});
     commands.push_back(
-        {.type = CommandType::StartAccounting, .peer_public_key = peer_public_key, .accounting_session_id = accounting_session_id, .policy = std::move(policy)});
+        {.type = CommandType::StartAccounting,
+         .peer_public_key = peer_public_key,
+         .accounting_session_id = accounting_session_id,
+         .policy = std::move(policy),
+         .authorization_context = std::nullopt});
     return commands;
 }
 
@@ -65,13 +85,21 @@ std::vector<Command> SessionManager::on_access_reject(const std::string& peer_pu
         if (!it->second.begin_block()) {
             return {};
         }
-        return {{.type = CommandType::BlockPeer, .peer_public_key = peer_public_key, .accounting_session_id = std::nullopt, .policy = std::nullopt}};
+        return {{.type = CommandType::BlockPeer,
+                 .peer_public_key = peer_public_key,
+                 .accounting_session_id = std::nullopt,
+                 .policy = std::nullopt,
+                 .authorization_context = std::nullopt}};
     }
 
     if (!it->second.begin_removal()) {
         return {};
     }
-    return {{.type = CommandType::RemovePeer, .peer_public_key = peer_public_key, .accounting_session_id = std::nullopt, .policy = std::nullopt}};
+    return {{.type = CommandType::RemovePeer,
+             .peer_public_key = peer_public_key,
+             .accounting_session_id = std::nullopt,
+             .policy = std::nullopt,
+             .authorization_context = std::nullopt}};
 }
 
 std::vector<Command> SessionManager::on_accounting_started(const std::string& peer_public_key) {
@@ -126,7 +154,11 @@ std::vector<Command> SessionManager::on_peer_removed(const std::string& peer_pub
         if (!it->second.begin_accounting_stop()) {
             return {};
         }
-        return {{.type = CommandType::StopAccounting, .peer_public_key = peer_public_key, .accounting_session_id = it->second.accounting_session_id(), .policy = std::nullopt}};
+        return {{.type = CommandType::StopAccounting,
+                 .peer_public_key = peer_public_key,
+                 .accounting_session_id = it->second.accounting_session_id(),
+                 .policy = std::nullopt,
+                 .authorization_context = std::nullopt}};
     }
 
     if (it->second.state() == SessionState::AccountingStopPending) {

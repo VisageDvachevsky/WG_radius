@@ -1,6 +1,7 @@
 #pragma once
 
 #include "wg_radius/domain/session_manager.hpp"
+#include "wg_radius/radius/radius_client.hpp"
 #include "wg_radius/shaping/traffic_shaper.hpp"
 #include "wg_radius/wireguard/peer_controller.hpp"
 
@@ -24,6 +25,7 @@ class CommandExecutor {
 public:
     CommandExecutor(
         std::string interface_name,
+        radius::RadiusClient& radius_client,
         wireguard::PeerController& peer_controller,
         shaping::TrafficShaper& traffic_shaper);
 
@@ -33,6 +35,7 @@ public:
 
 private:
     std::string interface_name_;
+    radius::RadiusClient& radius_client_;
     wireguard::PeerController& peer_controller_;
     shaping::TrafficShaper& traffic_shaper_;
 };

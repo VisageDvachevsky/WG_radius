@@ -3,6 +3,7 @@
 #include "wg_radius/application/auth_command_queue.hpp"
 #include "wg_radius/application/command_executor.hpp"
 #include "wg_radius/application/wg_polling_coordinator.hpp"
+#include "wg_radius/domain/session_manager.hpp"
 
 #include <vector>
 
@@ -20,6 +21,7 @@ public:
     ProfileRuntime(
         WgPollingCoordinator& polling_coordinator,
         AuthCommandQueue& auth_command_queue,
+        domain::SessionManager& session_manager,
         CommandExecutor& command_executor);
 
     [[nodiscard]] RuntimeStepResult step();
@@ -28,9 +30,12 @@ private:
     std::size_t dispatch_commands(
         const std::vector<domain::Command>& commands,
         std::vector<CommandExecutionResult>& executed_commands);
+    std::vector<domain::Command> on_command_executed(
+        const CommandExecutionResult& execution_result);
 
     WgPollingCoordinator& polling_coordinator_;
     AuthCommandQueue& auth_command_queue_;
+    domain::SessionManager& session_manager_;
     CommandExecutor& command_executor_;
 };
 

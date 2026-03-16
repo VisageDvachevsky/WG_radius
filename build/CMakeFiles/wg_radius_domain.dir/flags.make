@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I"/home/visage/Рабочий стол/WG_radius/include"
+CXX_INCLUDES = -I"/home/visage/Рабочий стол/WG_radius/include" -isystem /usr/include/libnl3 -isystem /usr/include/p11-kit-1
 
 CXX_FLAGS = -std=c++23
 

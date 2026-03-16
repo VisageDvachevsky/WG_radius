@@ -68,6 +68,71 @@ AuthorizationResponse map_response(int result, VALUE_PAIR* received) {
     }
 }
 
+bool send_accounting_request(const RadiusProfile& profile, const AccountingRequest& request) {
+    rc_handle* handle = rc_new();
+    if (handle == nullptr) {
+        return false;
+    }
+
+    VALUE_PAIR* send = nullptr;
+    auto cleanup = [&]() {
+        if (send != nullptr) {
+            rc_avpair_free(send);
+        }
+        rc_destroy(handle);
+    };
+
+    if (rc_config_init(handle) == nullptr ||
+        rc_add_config(
+            handle,
+            "authserver",
+            make_server_string(profile.auth_server, profile.shared_secret).c_str(),
+            "wg-radius",
+            0) != 0 ||
+        rc_add_config(
+            handle,
+            "acctserver",
+            make_server_string(profile.accounting_server, profile.shared_secret).c_str(),
+            "wg-radius",
+            0) != 0 ||
+        rc_add_config(handle, "dictionary", "/dev/null", "wg-radius", 0) != 0 ||
+        rc_read_dictionary_from_buffer(handle, kDictionary, sizeof(kDictionary) - 1) != 0 ||
+        rc_apply_config(handle) != 0) {
+        cleanup();
+        return false;
+    }
+
+    const auto timeout_seconds =
+        std::max<std::int64_t>(1, std::chrono::duration_cast<std::chrono::seconds>(profile.timeout).count());
+    const auto timeout_string = std::to_string(timeout_seconds);
+    const auto retries_string = std::to_string(profile.retries);
+    if (rc_add_config(handle, "radius_timeout", timeout_string.c_str(), "wg-radius", 0) != 0 ||
+        rc_add_config(handle, "radius_retries", retries_string.c_str(), "wg-radius", 0) != 0) {
+        cleanup();
+        return false;
+    }
+
+    const std::uint32_t status_type =
+        request.event_type == AccountingEventType::Start ? PW_STATUS_START : PW_STATUS_STOP;
+
+    if (rc_avpair_add(handle, &send, PW_USER_NAME, request.peer_public_key.c_str(), -1, 0) == nullptr ||
+        rc_avpair_add(handle, &send, PW_CALLING_STATION_ID, request.peer_public_key.c_str(), -1, 0) ==
+            nullptr ||
+        rc_avpair_add(handle, &send, PW_NAS_IDENTIFIER, profile.nas_identifier.c_str(), -1, 0) ==
+            nullptr ||
+        rc_avpair_add(handle, &send, PW_ACCT_SESSION_ID, request.accounting_session_id.c_str(), -1, 0) ==
+            nullptr ||
+        rc_avpair_add(handle, &send, PW_ACCT_STATUS_TYPE, &status_type, sizeof(status_type), 0) ==
+            nullptr) {
+        cleanup();
+        return false;
+    }
+
+    const auto result = rc_acct(handle, 0, send);
+    cleanup();
+    return result == OK_RC;
+}
+
 }  // namespace
 
 RadcliRadiusClient::RadcliRadiusClient(RadiusProfile profile) : profile_(std::move(profile)) {}
@@ -122,19 +187,41 @@ AuthorizationResponse RadcliRadiusClient::authorize(const AuthorizationRequest& 
         return {.decision = AuthorizationDecision::Error, .policy = std::nullopt};
     }
 
-    if (rc_avpair_add(handle, &send, PW_USER_NAME, request.peer_public_key.c_str(), -1, 0) == nullptr ||
-        rc_avpair_add(handle, &send, PW_CALLING_STATION_ID, request.peer_public_key.c_str(), -1, 0) ==
+    if (rc_avpair_add(handle, &send, PW_USER_NAME, request.user_name.c_str(), -1, 0) == nullptr ||
+        rc_avpair_add(handle, &send, PW_CALLING_STATION_ID, request.calling_station_id.c_str(), -1, 0) ==
             nullptr ||
-        rc_avpair_add(handle, &send, PW_NAS_IDENTIFIER, profile_.nas_identifier.c_str(), -1, 0) ==
+        rc_avpair_add(handle, &send, PW_NAS_IDENTIFIER, request.nas_identifier.c_str(), -1, 0) ==
             nullptr) {
         cleanup();
         return {.decision = AuthorizationDecision::Error, .policy = std::nullopt};
+    }
+
+    if (request.nas_ip_address.has_value() &&
+        rc_avpair_add(handle, &send, PW_NAS_IP_ADDRESS, request.nas_ip_address->c_str(), -1, 0) ==
+            nullptr) {
+        cleanup();
+        return {.decision = AuthorizationDecision::Error, .policy = std::nullopt};
+    }
+
+    if (!request.allowed_ips.empty()) {
+        const auto& first_allowed_ip = request.allowed_ips.front();
+        const auto slash = first_allowed_ip.find('/');
+        const auto framed_ip = first_allowed_ip.substr(0, slash);
+        if (rc_avpair_add(handle, &send, PW_FRAMED_IP_ADDRESS, framed_ip.c_str(), -1, 0) ==
+            nullptr) {
+            cleanup();
+            return {.decision = AuthorizationDecision::Error, .policy = std::nullopt};
+        }
     }
 
     const auto result = rc_auth(handle, 0, send, &received, message.data());
     const auto response = map_response(result, received);
     cleanup();
     return response;
+}
+
+bool RadcliRadiusClient::account(const AccountingRequest& request) {
+    return send_accounting_request(profile_, request);
 }
 
 }  // namespace wg_radius::radius

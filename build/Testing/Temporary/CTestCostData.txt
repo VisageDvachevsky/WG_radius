@@ -1,2 +1,2 @@
-wg_radius_domain_tests 5 0.0003241
+wg_radius_domain_tests 32 0.000383262
 ---

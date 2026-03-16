@@ -8,6 +8,25 @@ using namespace wg_radius;
 
 namespace {
 
+class FakeRadiusClient final : public radius::RadiusClient {
+public:
+    radius::AuthorizationResponse authorize(const radius::AuthorizationRequest& request) override {
+        (void)request;
+        return {
+            .decision = radius::AuthorizationDecision::Error,
+            .policy = std::nullopt,
+        };
+    }
+
+    std::vector<radius::AccountingRequest> accounting_requests;
+    bool next_account_result{true};
+
+    bool account(const radius::AccountingRequest& request) override {
+        accounting_requests.push_back(request);
+        return next_account_result;
+    }
+};
+
 class FakeAuthQueue final : public application::AuthCommandQueue {
 public:
     std::vector<domain::Command> submitted;
@@ -76,6 +95,7 @@ wireguard::InterfaceSnapshot make_snapshot(
 
 TEST_CASE(profile_runtime_submits_auth_commands_from_polling_result) {
     FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
     domain::SessionManager manager{
         domain::AuthorizationTrigger::OnPeerAppearance,
         domain::RejectMode::RemovePeer};
@@ -84,8 +104,8 @@ TEST_CASE(profile_runtime_submits_auth_commands_from_polling_result) {
     FakeAuthQueue auth_queue;
     FakePeerController peer_controller;
     FakeTrafficShaper traffic_shaper;
-    application::CommandExecutor executor{"wg0", peer_controller, traffic_shaper};
-    application::ProfileRuntime runtime{coordinator, auth_queue, executor};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{coordinator, auth_queue, manager, executor};
 
     wg_client.snapshots.push(make_snapshot("wg0", {}));
     EXPECT_EQ(runtime.step().poll_status, application::PollStatus::Seeded);
@@ -111,6 +131,7 @@ TEST_CASE(profile_runtime_submits_auth_commands_from_polling_result) {
 
 TEST_CASE(profile_runtime_executes_follow_up_commands_from_auth_results) {
     FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
     domain::SessionManager manager{
         domain::AuthorizationTrigger::OnPeerAppearance,
         domain::RejectMode::RemovePeer};
@@ -119,8 +140,8 @@ TEST_CASE(profile_runtime_executes_follow_up_commands_from_auth_results) {
     FakeAuthQueue auth_queue;
     FakePeerController peer_controller;
     FakeTrafficShaper traffic_shaper;
-    application::CommandExecutor executor{"wg0", peer_controller, traffic_shaper};
-    application::ProfileRuntime runtime{coordinator, auth_queue, executor};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{coordinator, auth_queue, manager, executor};
 
     auth_queue.results.push({
         .command = {
@@ -156,11 +177,9 @@ TEST_CASE(profile_runtime_executes_follow_up_commands_from_auth_results) {
     EXPECT_EQ(peer_controller.remove_calls, 1);
 }
 
-// TODO(stage-1/accounting): re-enable after CommandExecutor grows operational
-// accounting backends.
-#if 0
 TEST_CASE(profile_runtime_must_continue_with_accounting_commands_after_successful_auth) {
     FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
     domain::SessionManager manager{
         domain::AuthorizationTrigger::OnPeerAppearance,
         domain::RejectMode::RemovePeer};
@@ -169,8 +188,16 @@ TEST_CASE(profile_runtime_must_continue_with_accounting_commands_after_successfu
     FakeAuthQueue auth_queue;
     FakePeerController peer_controller;
     FakeTrafficShaper traffic_shaper;
-    application::CommandExecutor executor{"wg0", peer_controller, traffic_shaper};
-    application::ProfileRuntime runtime{coordinator, auth_queue, executor};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{coordinator, auth_queue, manager, executor};
+
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
+    EXPECT_EQ(manager.on_access_accept("peer-a", domain::SessionPolicy{}).size(), 2U);
 
     auth_queue.results.push({
         .command = {
@@ -197,10 +224,14 @@ TEST_CASE(profile_runtime_must_continue_with_accounting_commands_after_successfu
     EXPECT_EQ(result.auth_results_processed, 1U);
     EXPECT_EQ(result.executed_commands.size(), 1U);
     EXPECT_EQ(result.executed_commands.front().status, application::CommandExecutionStatus::Executed);
+    EXPECT_EQ(radius_client.accounting_requests.size(), 1U);
+    EXPECT_EQ(radius_client.accounting_requests.front().event_type, radius::AccountingEventType::Start);
+    EXPECT_EQ(manager.find_session("peer-a")->state(), domain::SessionState::Active);
 }
 
 TEST_CASE(profile_runtime_must_surface_accounting_stop_execution_after_peer_removal) {
     FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
     domain::SessionManager manager{
         domain::AuthorizationTrigger::OnPeerAppearance,
         domain::RejectMode::RemovePeer};
@@ -209,8 +240,18 @@ TEST_CASE(profile_runtime_must_surface_accounting_stop_execution_after_peer_remo
     FakeAuthQueue auth_queue;
     FakePeerController peer_controller;
     FakeTrafficShaper traffic_shaper;
-    application::CommandExecutor executor{"wg0", peer_controller, traffic_shaper};
-    application::ProfileRuntime runtime{coordinator, auth_queue, executor};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{coordinator, auth_queue, manager, executor};
+
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
+    EXPECT_EQ(manager.on_access_accept("peer-a", domain::SessionPolicy{}).size(), 2U);
+    EXPECT_TRUE(manager.on_accounting_started("peer-a").empty());
+    EXPECT_EQ(manager.on_peer_removed("peer-a").size(), 1U);
 
     auth_queue.results.push({
         .command = {
@@ -237,5 +278,7 @@ TEST_CASE(profile_runtime_must_surface_accounting_stop_execution_after_peer_remo
     EXPECT_EQ(result.auth_results_processed, 1U);
     EXPECT_EQ(result.executed_commands.size(), 1U);
     EXPECT_EQ(result.executed_commands.front().status, application::CommandExecutionStatus::Executed);
+    EXPECT_EQ(radius_client.accounting_requests.size(), 1U);
+    EXPECT_EQ(radius_client.accounting_requests.front().event_type, radius::AccountingEventType::Stop);
+    EXPECT_TRUE(manager.find_session("peer-a") == nullptr);
 }
-#endif

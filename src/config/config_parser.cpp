@@ -47,6 +47,16 @@ std::optional<domain::AuthorizationTrigger> parse_trigger(const std::string& val
     return std::nullopt;
 }
 
+std::optional<domain::RejectMode> parse_reject_mode(const std::string& value) {
+    if (value == "remove-peer") {
+        return domain::RejectMode::RemovePeer;
+    }
+    if (value == "block-peer") {
+        return domain::RejectMode::BlockPeer;
+    }
+    return std::nullopt;
+}
+
 }  // namespace
 
 std::optional<DaemonConfig> ConfigParser::parse(const std::string& text) {
@@ -92,9 +102,11 @@ std::optional<DaemonConfig> ConfigParser::parse(const std::string& text) {
                         .timeout = std::chrono::seconds{5},
                         .retries = 3,
                         .nas_identifier = {},
+                        .nas_ip_address = std::nullopt,
                     },
                 .poll_interval_ms = 1000,
                 .authorization_trigger = domain::AuthorizationTrigger::OnPeerAppearance,
+                .reject_mode = domain::RejectMode::RemovePeer,
             };
             continue;
         }
@@ -132,6 +144,8 @@ std::optional<DaemonConfig> ConfigParser::parse(const std::string& text) {
             current_profile->radius_profile.shared_secret = value;
         } else if (key == "nas_identifier") {
             current_profile->radius_profile.nas_identifier = value;
+        } else if (key == "nas_ip_address") {
+            current_profile->radius_profile.nas_ip_address = value;
         } else if (key == "timeout_ms") {
             const auto parsed = parse_int(value);
             if (!parsed.has_value() || *parsed <= 0) {
@@ -156,6 +170,12 @@ std::optional<DaemonConfig> ConfigParser::parse(const std::string& text) {
                 return std::nullopt;
             }
             current_profile->authorization_trigger = *parsed;
+        } else if (key == "reject_handling") {
+            const auto parsed = parse_reject_mode(value);
+            if (!parsed.has_value()) {
+                return std::nullopt;
+            }
+            current_profile->reject_mode = *parsed;
         } else {
             return std::nullopt;
         }

@@ -24,9 +24,11 @@ TEST_CASE(config_parser_parses_multiple_interface_profiles) {
         "acct_port = 1813\n"
         "secret = topsecret\n"
         "nas_identifier = wg-main\n"
+        "nas_ip_address = 192.0.2.1\n"
         "timeout_ms = 3000\n"
         "retries = 2\n"
         "poll_interval_ms = 1500\n"
+        "reject_handling = block-peer\n"
         "authorization_trigger = peer-appearance\n"
         "\n"
         "[profile wg-alt]\n"
@@ -45,8 +47,10 @@ TEST_CASE(config_parser_parses_multiple_interface_profiles) {
     EXPECT_EQ(config->profiles.at(0).interface_name, "wg0");
     EXPECT_EQ(config->profiles.at(0).radius_profile.auth_server.host, "127.0.0.1");
     EXPECT_EQ(config->profiles.at(0).radius_profile.auth_server.port, 1812);
+    EXPECT_EQ(config->profiles.at(0).radius_profile.nas_ip_address, std::optional<std::string>{"192.0.2.1"});
     EXPECT_EQ(config->profiles.at(0).radius_profile.timeout, std::chrono::milliseconds{3000});
     EXPECT_EQ(config->profiles.at(0).poll_interval_ms, 1500);
+    EXPECT_EQ(config->profiles.at(0).reject_mode, wg_radius::domain::RejectMode::BlockPeer);
     EXPECT_EQ(config->profiles.at(1).authorization_trigger, wg_radius::domain::AuthorizationTrigger::OnFirstHandshake);
 }
 

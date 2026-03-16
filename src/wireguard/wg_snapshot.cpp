@@ -121,9 +121,19 @@ std::vector<Event> SnapshotDiffer::diff(
     for (const auto& [public_key, current_peer] : current.peers) {
         const auto previous_it = previous->peers.find(public_key);
         if (previous_it == previous->peers.end()) {
-            events.push_back(Event{.type = EventType::PeerObserved, .peer_public_key = public_key});
+            events.push_back(Event{
+                .type = EventType::PeerObserved,
+                .peer_public_key = public_key,
+                .endpoint = current_peer.endpoint,
+                .allowed_ips = current_peer.allowed_ips,
+            });
             if (current_peer.latest_handshake_epoch_sec > 0) {
-                events.push_back(Event{.type = EventType::HandshakeObserved, .peer_public_key = public_key});
+                events.push_back(Event{
+                    .type = EventType::HandshakeObserved,
+                    .peer_public_key = public_key,
+                    .endpoint = current_peer.endpoint,
+                    .allowed_ips = current_peer.allowed_ips,
+                });
             }
             continue;
         }
@@ -131,22 +141,42 @@ std::vector<Event> SnapshotDiffer::diff(
         const auto& previous_peer = previous_it->second;
         if (previous_peer.latest_handshake_epoch_sec == 0 &&
             current_peer.latest_handshake_epoch_sec > 0) {
-            events.push_back(Event{.type = EventType::HandshakeObserved, .peer_public_key = public_key});
+            events.push_back(Event{
+                .type = EventType::HandshakeObserved,
+                .peer_public_key = public_key,
+                .endpoint = current_peer.endpoint,
+                .allowed_ips = current_peer.allowed_ips,
+            });
         } else if (
             current_peer.latest_handshake_epoch_sec > previous_peer.latest_handshake_epoch_sec) {
-            events.push_back(Event{.type = EventType::HandshakeObserved, .peer_public_key = public_key});
+            events.push_back(Event{
+                .type = EventType::HandshakeRefreshed,
+                .peer_public_key = public_key,
+                .endpoint = current_peer.endpoint,
+                .allowed_ips = current_peer.allowed_ips,
+            });
         }
 
         if (current_peer.transfer_rx_bytes != previous_peer.transfer_rx_bytes ||
             current_peer.transfer_tx_bytes != previous_peer.transfer_tx_bytes) {
-            events.push_back(Event{.type = EventType::TrafficUpdated, .peer_public_key = public_key});
+            events.push_back(Event{
+                .type = EventType::TrafficUpdated,
+                .peer_public_key = public_key,
+                .endpoint = current_peer.endpoint,
+                .allowed_ips = current_peer.allowed_ips,
+            });
         }
     }
 
     for (const auto& [public_key, previous_peer] : previous->peers) {
         (void)previous_peer;
         if (!current.peers.contains(public_key)) {
-            events.push_back(Event{.type = EventType::PeerRemoved, .peer_public_key = public_key});
+            events.push_back(Event{
+                .type = EventType::PeerRemoved,
+                .peer_public_key = public_key,
+                .endpoint = std::nullopt,
+                .allowed_ips = {},
+            });
         }
     }
 

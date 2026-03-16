@@ -7,23 +7,33 @@
 using namespace std::chrono_literals;
 using namespace wg_radius::domain;
 
+namespace {
+
+AuthorizationContext test_context() {
+    return {.endpoint = std::string{"198.51.100.10:12345"}, .allowed_ips = {"10.0.0.2/32"}};
+}
+
+}  // namespace
+
 TEST_CASE(session_manager_requests_auth_on_peer_appearance_mode) {
     SessionManager manager{AuthorizationTrigger::OnPeerAppearance, RejectMode::RemovePeer};
 
-    const auto commands = manager.on_peer_observed("peer-a");
+    const auto commands = manager.on_peer_observed("peer-a", test_context());
 
     EXPECT_EQ(commands.size(), 1U);
     EXPECT_EQ(commands.front().type, CommandType::SendAccessRequest);
     EXPECT_EQ(commands.front().peer_public_key, "peer-a");
+    EXPECT_TRUE(commands.front().authorization_context.has_value());
+    EXPECT_EQ(commands.front().authorization_context->endpoint, std::optional<std::string>{"198.51.100.10:12345"});
     EXPECT_EQ(manager.find_session("peer-a")->state(), SessionState::AuthPending);
 }
 
 TEST_CASE(session_manager_requests_auth_on_first_handshake_mode) {
     SessionManager manager{AuthorizationTrigger::OnFirstHandshake, RejectMode::RemovePeer};
 
-    EXPECT_TRUE(manager.on_peer_observed("peer-a").empty());
+    EXPECT_TRUE(manager.on_peer_observed("peer-a", test_context()).empty());
 
-    const auto commands = manager.on_handshake_observed("peer-a");
+    const auto commands = manager.on_handshake_observed("peer-a", test_context());
 
     EXPECT_EQ(commands.size(), 1U);
     EXPECT_EQ(commands.front().type, CommandType::SendAccessRequest);
@@ -33,7 +43,7 @@ TEST_CASE(session_manager_requests_auth_on_first_handshake_mode) {
 TEST_CASE(session_manager_ignores_handshake_for_unknown_peer) {
     SessionManager manager{AuthorizationTrigger::OnFirstHandshake, RejectMode::RemovePeer};
 
-    EXPECT_TRUE(manager.on_handshake_observed("peer-a").empty());
+    EXPECT_TRUE(manager.on_handshake_observed("peer-a", test_context()).empty());
     EXPECT_TRUE(manager.find_session("peer-a") == nullptr);
 }
 
@@ -45,7 +55,7 @@ TEST_CASE(session_manager_emits_policy_and_accounting_commands_on_access_accept)
         .session_timeout = 2h,
     };
 
-    EXPECT_EQ(manager.on_peer_observed("peer-a").size(), 1U);
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
 
     const auto commands = manager.on_access_accept("peer-a", policy);
 
@@ -64,7 +74,7 @@ TEST_CASE(session_manager_emits_policy_and_accounting_commands_on_access_accept)
 TEST_CASE(session_manager_emits_remove_peer_on_reject_in_remove_mode) {
     SessionManager manager{AuthorizationTrigger::OnPeerAppearance, RejectMode::RemovePeer};
 
-    EXPECT_EQ(manager.on_peer_observed("peer-a").size(), 1U);
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
 
     const auto commands = manager.on_access_reject("peer-a");
 
@@ -76,7 +86,7 @@ TEST_CASE(session_manager_emits_remove_peer_on_reject_in_remove_mode) {
 TEST_CASE(session_manager_blocks_peer_via_two_phase_confirmation) {
     SessionManager manager{AuthorizationTrigger::OnPeerAppearance, RejectMode::BlockPeer};
 
-    EXPECT_EQ(manager.on_peer_observed("peer-a").size(), 1U);
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
 
     const auto commands = manager.on_access_reject("peer-a");
 
@@ -90,7 +100,7 @@ TEST_CASE(session_manager_blocks_peer_via_two_phase_confirmation) {
 TEST_CASE(session_manager_stops_accounting_when_active_peer_is_removed_and_keeps_session_until_confirmation) {
     SessionManager manager{AuthorizationTrigger::OnPeerAppearance, RejectMode::RemovePeer};
 
-    EXPECT_EQ(manager.on_peer_observed("peer-a").size(), 1U);
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
     EXPECT_EQ(manager.on_access_accept("peer-a", SessionPolicy{}).size(), 2U);
     EXPECT_TRUE(manager.on_accounting_started("peer-a").empty());
 
@@ -108,10 +118,10 @@ TEST_CASE(session_manager_stops_accounting_when_active_peer_is_removed_and_keeps
 TEST_CASE(session_manager_ignores_duplicate_handshake_after_auth_started) {
     SessionManager manager{AuthorizationTrigger::OnFirstHandshake, RejectMode::RemovePeer};
 
-    EXPECT_TRUE(manager.on_peer_observed("peer-a").empty());
-    EXPECT_EQ(manager.on_handshake_observed("peer-a").size(), 1U);
+    EXPECT_TRUE(manager.on_peer_observed("peer-a", test_context()).empty());
+    EXPECT_EQ(manager.on_handshake_observed("peer-a", test_context()).size(), 1U);
 
-    const auto commands = manager.on_handshake_observed("peer-a");
+    const auto commands = manager.on_handshake_observed("peer-a", test_context());
 
     EXPECT_TRUE(commands.empty());
 }
@@ -119,9 +129,9 @@ TEST_CASE(session_manager_ignores_duplicate_handshake_after_auth_started) {
 TEST_CASE(session_manager_ignores_duplicate_peer_observation) {
     SessionManager manager{AuthorizationTrigger::OnPeerAppearance, RejectMode::RemovePeer};
 
-    EXPECT_EQ(manager.on_peer_observed("peer-a").size(), 1U);
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
 
-    const auto commands = manager.on_peer_observed("peer-a");
+    const auto commands = manager.on_peer_observed("peer-a", test_context());
 
     EXPECT_TRUE(commands.empty());
 }
@@ -145,7 +155,7 @@ TEST_CASE(session_manager_ignores_access_reject_for_unknown_peer) {
 TEST_CASE(session_manager_does_not_stop_accounting_for_pending_peer_removal) {
     SessionManager manager{AuthorizationTrigger::OnPeerAppearance, RejectMode::RemovePeer};
 
-    EXPECT_EQ(manager.on_peer_observed("peer-a").size(), 1U);
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
 
     const auto commands = manager.on_peer_removed("peer-a");
 
@@ -156,7 +166,7 @@ TEST_CASE(session_manager_does_not_stop_accounting_for_pending_peer_removal) {
 TEST_CASE(session_manager_peer_removal_is_idempotent) {
     SessionManager manager{AuthorizationTrigger::OnPeerAppearance, RejectMode::RemovePeer};
 
-    EXPECT_EQ(manager.on_peer_observed("peer-a").size(), 1U);
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
     EXPECT_EQ(manager.on_access_accept("peer-a", SessionPolicy{}).size(), 2U);
     EXPECT_TRUE(manager.on_accounting_started("peer-a").empty());
     EXPECT_EQ(manager.on_peer_removed("peer-a").size(), 1U);

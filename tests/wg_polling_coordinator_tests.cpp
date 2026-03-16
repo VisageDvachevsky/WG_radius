@@ -173,7 +173,12 @@ TEST_CASE(polling_coordinator_turns_peer_removal_into_stop_accounting_after_acti
             .transfer_tx_bytes = 0,
         }}));
     EXPECT_EQ(coordinator.poll().status, application::PollStatus::Seeded);
-    EXPECT_EQ(manager.on_peer_observed("peer-a").size(), 1U);
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
     EXPECT_EQ(manager.on_access_accept("peer-a", domain::SessionPolicy{}).size(), 2U);
     EXPECT_TRUE(manager.on_accounting_started("peer-a").empty());
 

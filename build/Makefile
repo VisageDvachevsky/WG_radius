@@ -159,6 +159,248 @@ wg_radius_domain_tests/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/build
 .PHONY : wg_radius_domain_tests/fast
 
+#=============================================================================
+# Target rules for targets named wg_radiusd
+
+# Build rule for target.
+wg_radiusd: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 wg_radiusd
+.PHONY : wg_radiusd
+
+# fast build rule for target.
+wg_radiusd/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radiusd.dir/build.make CMakeFiles/wg_radiusd.dir/build
+.PHONY : wg_radiusd/fast
+
+#=============================================================================
+# Target rules for targets named wg_native_smoke
+
+# Build rule for target.
+wg_native_smoke: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 wg_native_smoke
+.PHONY : wg_native_smoke
+
+# fast build rule for target.
+wg_native_smoke/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_native_smoke.dir/build.make CMakeFiles/wg_native_smoke.dir/build
+.PHONY : wg_native_smoke/fast
+
+cmd/wg_native_smoke.o: cmd/wg_native_smoke.cpp.o
+.PHONY : cmd/wg_native_smoke.o
+
+# target to build an object file
+cmd/wg_native_smoke.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_native_smoke.dir/build.make CMakeFiles/wg_native_smoke.dir/cmd/wg_native_smoke.cpp.o
+.PHONY : cmd/wg_native_smoke.cpp.o
+
+cmd/wg_native_smoke.i: cmd/wg_native_smoke.cpp.i
+.PHONY : cmd/wg_native_smoke.i
+
+# target to preprocess a source file
+cmd/wg_native_smoke.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_native_smoke.dir/build.make CMakeFiles/wg_native_smoke.dir/cmd/wg_native_smoke.cpp.i
+.PHONY : cmd/wg_native_smoke.cpp.i
+
+cmd/wg_native_smoke.s: cmd/wg_native_smoke.cpp.s
+.PHONY : cmd/wg_native_smoke.s
+
+# target to generate assembly for a file
+cmd/wg_native_smoke.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_native_smoke.dir/build.make CMakeFiles/wg_native_smoke.dir/cmd/wg_native_smoke.cpp.s
+.PHONY : cmd/wg_native_smoke.cpp.s
+
+cmd/wg_radiusd.o: cmd/wg_radiusd.cpp.o
+.PHONY : cmd/wg_radiusd.o
+
+# target to build an object file
+cmd/wg_radiusd.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radiusd.dir/build.make CMakeFiles/wg_radiusd.dir/cmd/wg_radiusd.cpp.o
+.PHONY : cmd/wg_radiusd.cpp.o
+
+cmd/wg_radiusd.i: cmd/wg_radiusd.cpp.i
+.PHONY : cmd/wg_radiusd.i
+
+# target to preprocess a source file
+cmd/wg_radiusd.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radiusd.dir/build.make CMakeFiles/wg_radiusd.dir/cmd/wg_radiusd.cpp.i
+.PHONY : cmd/wg_radiusd.cpp.i
+
+cmd/wg_radiusd.s: cmd/wg_radiusd.cpp.s
+.PHONY : cmd/wg_radiusd.s
+
+# target to generate assembly for a file
+cmd/wg_radiusd.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radiusd.dir/build.make CMakeFiles/wg_radiusd.dir/cmd/wg_radiusd.cpp.s
+.PHONY : cmd/wg_radiusd.cpp.s
+
+src/application/async_auth_command_processor.o: src/application/async_auth_command_processor.cpp.o
+.PHONY : src/application/async_auth_command_processor.o
+
+# target to build an object file
+src/application/async_auth_command_processor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/async_auth_command_processor.cpp.o
+.PHONY : src/application/async_auth_command_processor.cpp.o
+
+src/application/async_auth_command_processor.i: src/application/async_auth_command_processor.cpp.i
+.PHONY : src/application/async_auth_command_processor.i
+
+# target to preprocess a source file
+src/application/async_auth_command_processor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/async_auth_command_processor.cpp.i
+.PHONY : src/application/async_auth_command_processor.cpp.i
+
+src/application/async_auth_command_processor.s: src/application/async_auth_command_processor.cpp.s
+.PHONY : src/application/async_auth_command_processor.s
+
+# target to generate assembly for a file
+src/application/async_auth_command_processor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/async_auth_command_processor.cpp.s
+.PHONY : src/application/async_auth_command_processor.cpp.s
+
+src/application/auth_command_processor.o: src/application/auth_command_processor.cpp.o
+.PHONY : src/application/auth_command_processor.o
+
+# target to build an object file
+src/application/auth_command_processor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/auth_command_processor.cpp.o
+.PHONY : src/application/auth_command_processor.cpp.o
+
+src/application/auth_command_processor.i: src/application/auth_command_processor.cpp.i
+.PHONY : src/application/auth_command_processor.i
+
+# target to preprocess a source file
+src/application/auth_command_processor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/auth_command_processor.cpp.i
+.PHONY : src/application/auth_command_processor.cpp.i
+
+src/application/auth_command_processor.s: src/application/auth_command_processor.cpp.s
+.PHONY : src/application/auth_command_processor.s
+
+# target to generate assembly for a file
+src/application/auth_command_processor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/auth_command_processor.cpp.s
+.PHONY : src/application/auth_command_processor.cpp.s
+
+src/application/command_executor.o: src/application/command_executor.cpp.o
+.PHONY : src/application/command_executor.o
+
+# target to build an object file
+src/application/command_executor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/command_executor.cpp.o
+.PHONY : src/application/command_executor.cpp.o
+
+src/application/command_executor.i: src/application/command_executor.cpp.i
+.PHONY : src/application/command_executor.i
+
+# target to preprocess a source file
+src/application/command_executor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/command_executor.cpp.i
+.PHONY : src/application/command_executor.cpp.i
+
+src/application/command_executor.s: src/application/command_executor.cpp.s
+.PHONY : src/application/command_executor.s
+
+# target to generate assembly for a file
+src/application/command_executor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/command_executor.cpp.s
+.PHONY : src/application/command_executor.cpp.s
+
+src/application/profile_runtime.o: src/application/profile_runtime.cpp.o
+.PHONY : src/application/profile_runtime.o
+
+# target to build an object file
+src/application/profile_runtime.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/profile_runtime.cpp.o
+.PHONY : src/application/profile_runtime.cpp.o
+
+src/application/profile_runtime.i: src/application/profile_runtime.cpp.i
+.PHONY : src/application/profile_runtime.i
+
+# target to preprocess a source file
+src/application/profile_runtime.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/profile_runtime.cpp.i
+.PHONY : src/application/profile_runtime.cpp.i
+
+src/application/profile_runtime.s: src/application/profile_runtime.cpp.s
+.PHONY : src/application/profile_runtime.s
+
+# target to generate assembly for a file
+src/application/profile_runtime.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/profile_runtime.cpp.s
+.PHONY : src/application/profile_runtime.cpp.s
+
+src/application/wg_event_router.o: src/application/wg_event_router.cpp.o
+.PHONY : src/application/wg_event_router.o
+
+# target to build an object file
+src/application/wg_event_router.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/wg_event_router.cpp.o
+.PHONY : src/application/wg_event_router.cpp.o
+
+src/application/wg_event_router.i: src/application/wg_event_router.cpp.i
+.PHONY : src/application/wg_event_router.i
+
+# target to preprocess a source file
+src/application/wg_event_router.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/wg_event_router.cpp.i
+.PHONY : src/application/wg_event_router.cpp.i
+
+src/application/wg_event_router.s: src/application/wg_event_router.cpp.s
+.PHONY : src/application/wg_event_router.s
+
+# target to generate assembly for a file
+src/application/wg_event_router.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/wg_event_router.cpp.s
+.PHONY : src/application/wg_event_router.cpp.s
+
+src/application/wg_polling_coordinator.o: src/application/wg_polling_coordinator.cpp.o
+.PHONY : src/application/wg_polling_coordinator.o
+
+# target to build an object file
+src/application/wg_polling_coordinator.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/wg_polling_coordinator.cpp.o
+.PHONY : src/application/wg_polling_coordinator.cpp.o
+
+src/application/wg_polling_coordinator.i: src/application/wg_polling_coordinator.cpp.i
+.PHONY : src/application/wg_polling_coordinator.i
+
+# target to preprocess a source file
+src/application/wg_polling_coordinator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/wg_polling_coordinator.cpp.i
+.PHONY : src/application/wg_polling_coordinator.cpp.i
+
+src/application/wg_polling_coordinator.s: src/application/wg_polling_coordinator.cpp.s
+.PHONY : src/application/wg_polling_coordinator.s
+
+# target to generate assembly for a file
+src/application/wg_polling_coordinator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/application/wg_polling_coordinator.cpp.s
+.PHONY : src/application/wg_polling_coordinator.cpp.s
+
+src/config/config_parser.o: src/config/config_parser.cpp.o
+.PHONY : src/config/config_parser.o
+
+# target to build an object file
+src/config/config_parser.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/config/config_parser.cpp.o
+.PHONY : src/config/config_parser.cpp.o
+
+src/config/config_parser.i: src/config/config_parser.cpp.i
+.PHONY : src/config/config_parser.i
+
+# target to preprocess a source file
+src/config/config_parser.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/config/config_parser.cpp.i
+.PHONY : src/config/config_parser.cpp.i
+
+src/config/config_parser.s: src/config/config_parser.cpp.s
+.PHONY : src/config/config_parser.s
+
+# target to generate assembly for a file
+src/config/config_parser.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/config/config_parser.cpp.s
+.PHONY : src/config/config_parser.cpp.s
+
 src/domain/peer_session.o: src/domain/peer_session.cpp.o
 .PHONY : src/domain/peer_session.o
 
@@ -207,6 +449,222 @@ src/domain/session_manager.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/domain/session_manager.cpp.s
 .PHONY : src/domain/session_manager.cpp.s
 
+src/radius/radcli_radius_client.o: src/radius/radcli_radius_client.cpp.o
+.PHONY : src/radius/radcli_radius_client.o
+
+# target to build an object file
+src/radius/radcli_radius_client.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o
+.PHONY : src/radius/radcli_radius_client.cpp.o
+
+src/radius/radcli_radius_client.i: src/radius/radcli_radius_client.cpp.i
+.PHONY : src/radius/radcli_radius_client.i
+
+# target to preprocess a source file
+src/radius/radcli_radius_client.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.i
+.PHONY : src/radius/radcli_radius_client.cpp.i
+
+src/radius/radcli_radius_client.s: src/radius/radcli_radius_client.cpp.s
+.PHONY : src/radius/radcli_radius_client.s
+
+# target to generate assembly for a file
+src/radius/radcli_radius_client.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.s
+.PHONY : src/radius/radcli_radius_client.cpp.s
+
+src/shaping/noop_traffic_shaper.o: src/shaping/noop_traffic_shaper.cpp.o
+.PHONY : src/shaping/noop_traffic_shaper.o
+
+# target to build an object file
+src/shaping/noop_traffic_shaper.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/shaping/noop_traffic_shaper.cpp.o
+.PHONY : src/shaping/noop_traffic_shaper.cpp.o
+
+src/shaping/noop_traffic_shaper.i: src/shaping/noop_traffic_shaper.cpp.i
+.PHONY : src/shaping/noop_traffic_shaper.i
+
+# target to preprocess a source file
+src/shaping/noop_traffic_shaper.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/shaping/noop_traffic_shaper.cpp.i
+.PHONY : src/shaping/noop_traffic_shaper.cpp.i
+
+src/shaping/noop_traffic_shaper.s: src/shaping/noop_traffic_shaper.cpp.s
+.PHONY : src/shaping/noop_traffic_shaper.s
+
+# target to generate assembly for a file
+src/shaping/noop_traffic_shaper.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/shaping/noop_traffic_shaper.cpp.s
+.PHONY : src/shaping/noop_traffic_shaper.cpp.s
+
+src/wireguard/netlink_peer_controller.o: src/wireguard/netlink_peer_controller.cpp.o
+.PHONY : src/wireguard/netlink_peer_controller.o
+
+# target to build an object file
+src/wireguard/netlink_peer_controller.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/wireguard/netlink_peer_controller.cpp.o
+.PHONY : src/wireguard/netlink_peer_controller.cpp.o
+
+src/wireguard/netlink_peer_controller.i: src/wireguard/netlink_peer_controller.cpp.i
+.PHONY : src/wireguard/netlink_peer_controller.i
+
+# target to preprocess a source file
+src/wireguard/netlink_peer_controller.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/wireguard/netlink_peer_controller.cpp.i
+.PHONY : src/wireguard/netlink_peer_controller.cpp.i
+
+src/wireguard/netlink_peer_controller.s: src/wireguard/netlink_peer_controller.cpp.s
+.PHONY : src/wireguard/netlink_peer_controller.s
+
+# target to generate assembly for a file
+src/wireguard/netlink_peer_controller.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/wireguard/netlink_peer_controller.cpp.s
+.PHONY : src/wireguard/netlink_peer_controller.cpp.s
+
+src/wireguard/netlink_wireguard_client.o: src/wireguard/netlink_wireguard_client.cpp.o
+.PHONY : src/wireguard/netlink_wireguard_client.o
+
+# target to build an object file
+src/wireguard/netlink_wireguard_client.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/wireguard/netlink_wireguard_client.cpp.o
+.PHONY : src/wireguard/netlink_wireguard_client.cpp.o
+
+src/wireguard/netlink_wireguard_client.i: src/wireguard/netlink_wireguard_client.cpp.i
+.PHONY : src/wireguard/netlink_wireguard_client.i
+
+# target to preprocess a source file
+src/wireguard/netlink_wireguard_client.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/wireguard/netlink_wireguard_client.cpp.i
+.PHONY : src/wireguard/netlink_wireguard_client.cpp.i
+
+src/wireguard/netlink_wireguard_client.s: src/wireguard/netlink_wireguard_client.cpp.s
+.PHONY : src/wireguard/netlink_wireguard_client.s
+
+# target to generate assembly for a file
+src/wireguard/netlink_wireguard_client.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/wireguard/netlink_wireguard_client.cpp.s
+.PHONY : src/wireguard/netlink_wireguard_client.cpp.s
+
+src/wireguard/wg_snapshot.o: src/wireguard/wg_snapshot.cpp.o
+.PHONY : src/wireguard/wg_snapshot.o
+
+# target to build an object file
+src/wireguard/wg_snapshot.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.o
+.PHONY : src/wireguard/wg_snapshot.cpp.o
+
+src/wireguard/wg_snapshot.i: src/wireguard/wg_snapshot.cpp.i
+.PHONY : src/wireguard/wg_snapshot.i
+
+# target to preprocess a source file
+src/wireguard/wg_snapshot.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.i
+.PHONY : src/wireguard/wg_snapshot.cpp.i
+
+src/wireguard/wg_snapshot.s: src/wireguard/wg_snapshot.cpp.s
+.PHONY : src/wireguard/wg_snapshot.s
+
+# target to generate assembly for a file
+src/wireguard/wg_snapshot.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain.dir/build.make CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.s
+.PHONY : src/wireguard/wg_snapshot.cpp.s
+
+tests/async_auth_command_processor_tests.o: tests/async_auth_command_processor_tests.cpp.o
+.PHONY : tests/async_auth_command_processor_tests.o
+
+# target to build an object file
+tests/async_auth_command_processor_tests.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.o
+.PHONY : tests/async_auth_command_processor_tests.cpp.o
+
+tests/async_auth_command_processor_tests.i: tests/async_auth_command_processor_tests.cpp.i
+.PHONY : tests/async_auth_command_processor_tests.i
+
+# target to preprocess a source file
+tests/async_auth_command_processor_tests.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.i
+.PHONY : tests/async_auth_command_processor_tests.cpp.i
+
+tests/async_auth_command_processor_tests.s: tests/async_auth_command_processor_tests.cpp.s
+.PHONY : tests/async_auth_command_processor_tests.s
+
+# target to generate assembly for a file
+tests/async_auth_command_processor_tests.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.s
+.PHONY : tests/async_auth_command_processor_tests.cpp.s
+
+tests/auth_command_processor_tests.o: tests/auth_command_processor_tests.cpp.o
+.PHONY : tests/auth_command_processor_tests.o
+
+# target to build an object file
+tests/auth_command_processor_tests.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.o
+.PHONY : tests/auth_command_processor_tests.cpp.o
+
+tests/auth_command_processor_tests.i: tests/auth_command_processor_tests.cpp.i
+.PHONY : tests/auth_command_processor_tests.i
+
+# target to preprocess a source file
+tests/auth_command_processor_tests.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.i
+.PHONY : tests/auth_command_processor_tests.cpp.i
+
+tests/auth_command_processor_tests.s: tests/auth_command_processor_tests.cpp.s
+.PHONY : tests/auth_command_processor_tests.s
+
+# target to generate assembly for a file
+tests/auth_command_processor_tests.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.s
+.PHONY : tests/auth_command_processor_tests.cpp.s
+
+tests/command_executor_tests.o: tests/command_executor_tests.cpp.o
+.PHONY : tests/command_executor_tests.o
+
+# target to build an object file
+tests/command_executor_tests.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.o
+.PHONY : tests/command_executor_tests.cpp.o
+
+tests/command_executor_tests.i: tests/command_executor_tests.cpp.i
+.PHONY : tests/command_executor_tests.i
+
+# target to preprocess a source file
+tests/command_executor_tests.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.i
+.PHONY : tests/command_executor_tests.cpp.i
+
+tests/command_executor_tests.s: tests/command_executor_tests.cpp.s
+.PHONY : tests/command_executor_tests.s
+
+# target to generate assembly for a file
+tests/command_executor_tests.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.s
+.PHONY : tests/command_executor_tests.cpp.s
+
+tests/config_parser_tests.o: tests/config_parser_tests.cpp.o
+.PHONY : tests/config_parser_tests.o
+
+# target to build an object file
+tests/config_parser_tests.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o
+.PHONY : tests/config_parser_tests.cpp.o
+
+tests/config_parser_tests.i: tests/config_parser_tests.cpp.i
+.PHONY : tests/config_parser_tests.i
+
+# target to preprocess a source file
+tests/config_parser_tests.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.i
+.PHONY : tests/config_parser_tests.cpp.i
+
+tests/config_parser_tests.s: tests/config_parser_tests.cpp.s
+.PHONY : tests/config_parser_tests.s
+
+# target to generate assembly for a file
+tests/config_parser_tests.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.s
+.PHONY : tests/config_parser_tests.cpp.s
+
 tests/peer_session_tests.o: tests/peer_session_tests.cpp.o
 .PHONY : tests/peer_session_tests.o
 
@@ -230,6 +688,30 @@ tests/peer_session_tests.s: tests/peer_session_tests.cpp.s
 tests/peer_session_tests.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.s
 .PHONY : tests/peer_session_tests.cpp.s
+
+tests/profile_runtime_tests.o: tests/profile_runtime_tests.cpp.o
+.PHONY : tests/profile_runtime_tests.o
+
+# target to build an object file
+tests/profile_runtime_tests.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o
+.PHONY : tests/profile_runtime_tests.cpp.o
+
+tests/profile_runtime_tests.i: tests/profile_runtime_tests.cpp.i
+.PHONY : tests/profile_runtime_tests.i
+
+# target to preprocess a source file
+tests/profile_runtime_tests.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.i
+.PHONY : tests/profile_runtime_tests.cpp.i
+
+tests/profile_runtime_tests.s: tests/profile_runtime_tests.cpp.s
+.PHONY : tests/profile_runtime_tests.s
+
+# target to generate assembly for a file
+tests/profile_runtime_tests.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.s
+.PHONY : tests/profile_runtime_tests.cpp.s
 
 tests/session_manager_tests.o: tests/session_manager_tests.cpp.o
 .PHONY : tests/session_manager_tests.o
@@ -279,6 +761,78 @@ tests/test_main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/test_main.cpp.s
 .PHONY : tests/test_main.cpp.s
 
+tests/wg_event_router_tests.o: tests/wg_event_router_tests.cpp.o
+.PHONY : tests/wg_event_router_tests.o
+
+# target to build an object file
+tests/wg_event_router_tests.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.o
+.PHONY : tests/wg_event_router_tests.cpp.o
+
+tests/wg_event_router_tests.i: tests/wg_event_router_tests.cpp.i
+.PHONY : tests/wg_event_router_tests.i
+
+# target to preprocess a source file
+tests/wg_event_router_tests.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.i
+.PHONY : tests/wg_event_router_tests.cpp.i
+
+tests/wg_event_router_tests.s: tests/wg_event_router_tests.cpp.s
+.PHONY : tests/wg_event_router_tests.s
+
+# target to generate assembly for a file
+tests/wg_event_router_tests.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.s
+.PHONY : tests/wg_event_router_tests.cpp.s
+
+tests/wg_polling_coordinator_tests.o: tests/wg_polling_coordinator_tests.cpp.o
+.PHONY : tests/wg_polling_coordinator_tests.o
+
+# target to build an object file
+tests/wg_polling_coordinator_tests.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.o
+.PHONY : tests/wg_polling_coordinator_tests.cpp.o
+
+tests/wg_polling_coordinator_tests.i: tests/wg_polling_coordinator_tests.cpp.i
+.PHONY : tests/wg_polling_coordinator_tests.i
+
+# target to preprocess a source file
+tests/wg_polling_coordinator_tests.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.i
+.PHONY : tests/wg_polling_coordinator_tests.cpp.i
+
+tests/wg_polling_coordinator_tests.s: tests/wg_polling_coordinator_tests.cpp.s
+.PHONY : tests/wg_polling_coordinator_tests.s
+
+# target to generate assembly for a file
+tests/wg_polling_coordinator_tests.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.s
+.PHONY : tests/wg_polling_coordinator_tests.cpp.s
+
+tests/wg_snapshot_tests.o: tests/wg_snapshot_tests.cpp.o
+.PHONY : tests/wg_snapshot_tests.o
+
+# target to build an object file
+tests/wg_snapshot_tests.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.o
+.PHONY : tests/wg_snapshot_tests.cpp.o
+
+tests/wg_snapshot_tests.i: tests/wg_snapshot_tests.cpp.i
+.PHONY : tests/wg_snapshot_tests.i
+
+# target to preprocess a source file
+tests/wg_snapshot_tests.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.i
+.PHONY : tests/wg_snapshot_tests.cpp.i
+
+tests/wg_snapshot_tests.s: tests/wg_snapshot_tests.cpp.s
+.PHONY : tests/wg_snapshot_tests.s
+
+# target to generate assembly for a file
+tests/wg_snapshot_tests.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.s
+.PHONY : tests/wg_snapshot_tests.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -289,23 +843,91 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... test"
+	@echo "... wg_native_smoke"
 	@echo "... wg_radius_domain"
 	@echo "... wg_radius_domain_tests"
+	@echo "... wg_radiusd"
+	@echo "... cmd/wg_native_smoke.o"
+	@echo "... cmd/wg_native_smoke.i"
+	@echo "... cmd/wg_native_smoke.s"
+	@echo "... cmd/wg_radiusd.o"
+	@echo "... cmd/wg_radiusd.i"
+	@echo "... cmd/wg_radiusd.s"
+	@echo "... src/application/async_auth_command_processor.o"
+	@echo "... src/application/async_auth_command_processor.i"
+	@echo "... src/application/async_auth_command_processor.s"
+	@echo "... src/application/auth_command_processor.o"
+	@echo "... src/application/auth_command_processor.i"
+	@echo "... src/application/auth_command_processor.s"
+	@echo "... src/application/command_executor.o"
+	@echo "... src/application/command_executor.i"
+	@echo "... src/application/command_executor.s"
+	@echo "... src/application/profile_runtime.o"
+	@echo "... src/application/profile_runtime.i"
+	@echo "... src/application/profile_runtime.s"
+	@echo "... src/application/wg_event_router.o"
+	@echo "... src/application/wg_event_router.i"
+	@echo "... src/application/wg_event_router.s"
+	@echo "... src/application/wg_polling_coordinator.o"
+	@echo "... src/application/wg_polling_coordinator.i"
+	@echo "... src/application/wg_polling_coordinator.s"
+	@echo "... src/config/config_parser.o"
+	@echo "... src/config/config_parser.i"
+	@echo "... src/config/config_parser.s"
 	@echo "... src/domain/peer_session.o"
 	@echo "... src/domain/peer_session.i"
 	@echo "... src/domain/peer_session.s"
 	@echo "... src/domain/session_manager.o"
 	@echo "... src/domain/session_manager.i"
 	@echo "... src/domain/session_manager.s"
+	@echo "... src/radius/radcli_radius_client.o"
+	@echo "... src/radius/radcli_radius_client.i"
+	@echo "... src/radius/radcli_radius_client.s"
+	@echo "... src/shaping/noop_traffic_shaper.o"
+	@echo "... src/shaping/noop_traffic_shaper.i"
+	@echo "... src/shaping/noop_traffic_shaper.s"
+	@echo "... src/wireguard/netlink_peer_controller.o"
+	@echo "... src/wireguard/netlink_peer_controller.i"
+	@echo "... src/wireguard/netlink_peer_controller.s"
+	@echo "... src/wireguard/netlink_wireguard_client.o"
+	@echo "... src/wireguard/netlink_wireguard_client.i"
+	@echo "... src/wireguard/netlink_wireguard_client.s"
+	@echo "... src/wireguard/wg_snapshot.o"
+	@echo "... src/wireguard/wg_snapshot.i"
+	@echo "... src/wireguard/wg_snapshot.s"
+	@echo "... tests/async_auth_command_processor_tests.o"
+	@echo "... tests/async_auth_command_processor_tests.i"
+	@echo "... tests/async_auth_command_processor_tests.s"
+	@echo "... tests/auth_command_processor_tests.o"
+	@echo "... tests/auth_command_processor_tests.i"
+	@echo "... tests/auth_command_processor_tests.s"
+	@echo "... tests/command_executor_tests.o"
+	@echo "... tests/command_executor_tests.i"
+	@echo "... tests/command_executor_tests.s"
+	@echo "... tests/config_parser_tests.o"
+	@echo "... tests/config_parser_tests.i"
+	@echo "... tests/config_parser_tests.s"
 	@echo "... tests/peer_session_tests.o"
 	@echo "... tests/peer_session_tests.i"
 	@echo "... tests/peer_session_tests.s"
+	@echo "... tests/profile_runtime_tests.o"
+	@echo "... tests/profile_runtime_tests.i"
+	@echo "... tests/profile_runtime_tests.s"
 	@echo "... tests/session_manager_tests.o"
 	@echo "... tests/session_manager_tests.i"
 	@echo "... tests/session_manager_tests.s"
 	@echo "... tests/test_main.o"
 	@echo "... tests/test_main.i"
 	@echo "... tests/test_main.s"
+	@echo "... tests/wg_event_router_tests.o"
+	@echo "... tests/wg_event_router_tests.i"
+	@echo "... tests/wg_event_router_tests.s"
+	@echo "... tests/wg_polling_coordinator_tests.o"
+	@echo "... tests/wg_polling_coordinator_tests.i"
+	@echo "... tests/wg_polling_coordinator_tests.s"
+	@echo "... tests/wg_snapshot_tests.o"
+	@echo "... tests/wg_snapshot_tests.i"
+	@echo "... tests/wg_snapshot_tests.s"
 .PHONY : help
 
 

@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <optional>
 #include <string>
 
 namespace wg_radius::radius {
@@ -18,6 +19,7 @@ struct RadiusProfile {
     std::chrono::milliseconds timeout;
     int retries;
     std::string nas_identifier;
+    std::optional<std::string> nas_ip_address;
 };
 
 }  // namespace wg_radius::radius

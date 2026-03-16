@@ -20,6 +20,9 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/usr/share/cmake-3.31/Modules/Compiler/CMakeCommonCompilerMacros.cmake"
   "/usr/share/cmake-3.31/Modules/Compiler/GNU-CXX.cmake"
   "/usr/share/cmake-3.31/Modules/Compiler/GNU.cmake"
+  "/usr/share/cmake-3.31/Modules/FindPackageHandleStandardArgs.cmake"
+  "/usr/share/cmake-3.31/Modules/FindPackageMessage.cmake"
+  "/usr/share/cmake-3.31/Modules/FindPkgConfig.cmake"
   "/usr/share/cmake-3.31/Modules/Internal/CMakeCXXLinkerInformation.cmake"
   "/usr/share/cmake-3.31/Modules/Internal/CMakeCommonLinkerInformation.cmake"
   "/usr/share/cmake-3.31/Modules/Linker/GNU-CXX.cmake"
@@ -49,4 +52,6 @@ set(CMAKE_MAKEFILE_PRODUCTS
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/wg_radius_domain.dir/DependInfo.cmake"
   "CMakeFiles/wg_radius_domain_tests.dir/DependInfo.cmake"
+  "CMakeFiles/wg_radiusd.dir/DependInfo.cmake"
+  "CMakeFiles/wg_native_smoke.dir/DependInfo.cmake"
   )

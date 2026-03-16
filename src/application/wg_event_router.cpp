@@ -14,11 +14,16 @@ void WgEventRouter::seed(const wireguard::InterfaceSnapshot& snapshot) {
 std::vector<domain::Command> WgEventRouter::handle(const wireguard::Event& event) {
     switch (event.type) {
         case wireguard::EventType::PeerObserved:
-            return session_manager_.on_peer_observed(event.peer_public_key);
+            return session_manager_.on_peer_observed(
+                event.peer_public_key,
+                {.endpoint = event.endpoint, .allowed_ips = event.allowed_ips});
         case wireguard::EventType::PeerRemoved:
             return session_manager_.on_peer_removed(event.peer_public_key);
         case wireguard::EventType::HandshakeObserved:
-            return session_manager_.on_handshake_observed(event.peer_public_key);
+            return session_manager_.on_handshake_observed(
+                event.peer_public_key,
+                {.endpoint = event.endpoint, .allowed_ips = event.allowed_ips});
+        case wireguard::EventType::HandshakeRefreshed:
         case wireguard::EventType::TrafficUpdated:
             return {};
     }

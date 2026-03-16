@@ -9,6 +9,16 @@ using namespace wg_radius;
 
 namespace {
 
+const radius::RadiusProfile kRadiusProfile{
+    .auth_server = {"127.0.0.1", 1812},
+    .accounting_server = {"127.0.0.1", 1813},
+    .shared_secret = "secret",
+    .timeout = std::chrono::seconds{5},
+    .retries = 3,
+    .nas_identifier = "wg-test",
+    .nas_ip_address = std::nullopt,
+};
+
 class FakeRadiusClient final : public radius::RadiusClient {
 public:
     radius::AuthorizationResponse next_response{
@@ -24,6 +34,11 @@ public:
         (void)request;
         return next_response;
     }
+
+    bool account(const radius::AccountingRequest& request) override {
+        (void)request;
+        return true;
+    }
 };
 
 }  // namespace
@@ -33,10 +48,15 @@ TEST_CASE(async_auth_processor_processes_access_request_in_background) {
         domain::AuthorizationTrigger::OnPeerAppearance,
         domain::RejectMode::RemovePeer};
     FakeRadiusClient radius_client;
-    application::AuthCommandProcessor processor{"wg0", manager, radius_client};
+    application::AuthCommandProcessor processor{"wg0", kRadiusProfile, manager, radius_client};
     application::AsyncAuthCommandProcessor async_processor{processor};
 
-    EXPECT_EQ(manager.on_peer_observed("peer-a").size(), 1U);
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
     async_processor.submit({
         .type = domain::CommandType::SendAccessRequest,
         .peer_public_key = "peer-a",

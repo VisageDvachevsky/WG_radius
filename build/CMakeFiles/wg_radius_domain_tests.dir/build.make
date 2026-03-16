@@ -86,10 +86,66 @@ CMakeFiles/wg_radius_domain_tests.dir/tests/test_main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/wg_radius_domain_tests.dir/tests/test_main.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/home/visage/Рабочий стол/WG_radius/tests/test_main.cpp" -o CMakeFiles/wg_radius_domain_tests.dir/tests/test_main.cpp.s
 
+CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/flags.make
+CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.o: /home/visage/Рабочий\ стол/WG_radius/tests/async_auth_command_processor_tests.cpp
+CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.o -MF CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.o.d -o CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.o -c "/home/visage/Рабочий стол/WG_radius/tests/async_auth_command_processor_tests.cpp"
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/home/visage/Рабочий стол/WG_radius/tests/async_auth_command_processor_tests.cpp" > CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.i
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/home/visage/Рабочий стол/WG_radius/tests/async_auth_command_processor_tests.cpp" -o CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.s
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/flags.make
+CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.o: /home/visage/Рабочий\ стол/WG_radius/tests/auth_command_processor_tests.cpp
+CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.o -MF CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.o.d -o CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.o -c "/home/visage/Рабочий стол/WG_radius/tests/auth_command_processor_tests.cpp"
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/home/visage/Рабочий стол/WG_radius/tests/auth_command_processor_tests.cpp" > CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.i
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/home/visage/Рабочий стол/WG_radius/tests/auth_command_processor_tests.cpp" -o CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.s
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/flags.make
+CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.o: /home/visage/Рабочий\ стол/WG_radius/tests/command_executor_tests.cpp
+CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.o -MF CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.o.d -o CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.o -c "/home/visage/Рабочий стол/WG_radius/tests/command_executor_tests.cpp"
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/home/visage/Рабочий стол/WG_radius/tests/command_executor_tests.cpp" > CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.i
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/home/visage/Рабочий стол/WG_radius/tests/command_executor_tests.cpp" -o CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.s
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/flags.make
+CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o: /home/visage/Рабочий\ стол/WG_radius/tests/config_parser_tests.cpp
+CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o -MF CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o.d -o CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o -c "/home/visage/Рабочий стол/WG_radius/tests/config_parser_tests.cpp"
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/home/visage/Рабочий стол/WG_radius/tests/config_parser_tests.cpp" > CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.i
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/home/visage/Рабочий стол/WG_radius/tests/config_parser_tests.cpp" -o CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.s
+
 CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/flags.make
 CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o: /home/visage/Рабочий\ стол/WG_radius/tests/peer_session_tests.cpp
 CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o -MF CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o.d -o CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o -c "/home/visage/Рабочий стол/WG_radius/tests/peer_session_tests.cpp"
 
 CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.i: cmake_force
@@ -100,10 +156,24 @@ CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.s: cmake_forc
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/home/visage/Рабочий стол/WG_radius/tests/peer_session_tests.cpp" -o CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.s
 
+CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/flags.make
+CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o: /home/visage/Рабочий\ стол/WG_radius/tests/profile_runtime_tests.cpp
+CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o -MF CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o.d -o CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o -c "/home/visage/Рабочий стол/WG_radius/tests/profile_runtime_tests.cpp"
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/home/visage/Рабочий стол/WG_radius/tests/profile_runtime_tests.cpp" > CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.i
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/home/visage/Рабочий стол/WG_radius/tests/profile_runtime_tests.cpp" -o CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.s
+
 CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/flags.make
 CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o: /home/visage/Рабочий\ стол/WG_radius/tests/session_manager_tests.cpp
 CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o -MF CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o.d -o CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o -c "/home/visage/Рабочий стол/WG_radius/tests/session_manager_tests.cpp"
 
 CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.i: cmake_force
@@ -114,23 +184,84 @@ CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.s: cmake_f
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/home/visage/Рабочий стол/WG_radius/tests/session_manager_tests.cpp" -o CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.s
 
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/flags.make
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.o: /home/visage/Рабочий\ стол/WG_radius/tests/wg_event_router_tests.cpp
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.o -MF CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.o.d -o CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.o -c "/home/visage/Рабочий стол/WG_radius/tests/wg_event_router_tests.cpp"
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/home/visage/Рабочий стол/WG_radius/tests/wg_event_router_tests.cpp" > CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.i
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/home/visage/Рабочий стол/WG_radius/tests/wg_event_router_tests.cpp" -o CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.s
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/flags.make
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.o: /home/visage/Рабочий\ стол/WG_radius/tests/wg_polling_coordinator_tests.cpp
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.o -MF CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.o.d -o CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.o -c "/home/visage/Рабочий стол/WG_radius/tests/wg_polling_coordinator_tests.cpp"
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/home/visage/Рабочий стол/WG_radius/tests/wg_polling_coordinator_tests.cpp" > CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.i
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/home/visage/Рабочий стол/WG_radius/tests/wg_polling_coordinator_tests.cpp" -o CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.s
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/flags.make
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.o: /home/visage/Рабочий\ стол/WG_radius/tests/wg_snapshot_tests.cpp
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.o: CMakeFiles/wg_radius_domain_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.o -MF CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.o.d -o CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.o -c "/home/visage/Рабочий стол/WG_radius/tests/wg_snapshot_tests.cpp"
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/home/visage/Рабочий стол/WG_radius/tests/wg_snapshot_tests.cpp" > CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.i
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/home/visage/Рабочий стол/WG_radius/tests/wg_snapshot_tests.cpp" -o CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.s
+
 # Object files for target wg_radius_domain_tests
 wg_radius_domain_tests_OBJECTS = \
 "CMakeFiles/wg_radius_domain_tests.dir/tests/test_main.cpp.o" \
+"CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.o" \
+"CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.o" \
+"CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.o" \
+"CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o" \
 "CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o" \
-"CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o"
+"CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o" \
+"CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o" \
+"CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.o" \
+"CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.o" \
+"CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.o"
 
 # External object files for target wg_radius_domain_tests
 wg_radius_domain_tests_EXTERNAL_OBJECTS =
 
 wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/tests/test_main.cpp.o
+wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/tests/async_auth_command_processor_tests.cpp.o
+wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/tests/auth_command_processor_tests.cpp.o
+wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.o
+wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o
 wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o
+wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o
 wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o
+wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.o
+wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/tests/wg_polling_coordinator_tests.cpp.o
+wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/tests/wg_snapshot_tests.cpp.o
 wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/build.make
 wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/compiler_depend.ts
 wg_radius_domain_tests: libwg_radius_domain.a
+wg_radius_domain_tests: /usr/lib/x86_64-linux-gnu/libnl-genl-3.so
+wg_radius_domain_tests: /usr/lib/x86_64-linux-gnu/libnl-3.so
+wg_radius_domain_tests: /usr/lib/x86_64-linux-gnu/libradcli.so
 wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable wg_radius_domain_tests"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_12) "Linking CXX executable wg_radius_domain_tests"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/wg_radius_domain_tests.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

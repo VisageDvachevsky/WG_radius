@@ -15,6 +15,7 @@ struct InterfaceProfile {
     int poll_interval_ms{1000};
     domain::AuthorizationTrigger authorization_trigger{
         domain::AuthorizationTrigger::OnPeerAppearance};
+    domain::RejectMode reject_mode{domain::RejectMode::RemovePeer};
 };
 
 struct DaemonConfig {

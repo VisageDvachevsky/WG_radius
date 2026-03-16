@@ -26,12 +26,15 @@ enum class EventType {
     PeerObserved,
     PeerRemoved,
     HandshakeObserved,
+    HandshakeRefreshed,
     TrafficUpdated,
 };
 
 struct Event {
     EventType type;
     std::string peer_public_key;
+    std::optional<std::string> endpoint;
+    std::vector<std::string> allowed_ips;
 };
 
 class SnapshotParser {

@@ -9,6 +9,27 @@ using namespace wg_radius;
 
 namespace {
 
+class FakeRadiusClient final : public radius::RadiusClient {
+public:
+    radius::AuthorizationResponse authorize(const radius::AuthorizationRequest& request) override {
+        (void)request;
+        return {
+            .decision = radius::AuthorizationDecision::Error,
+            .policy = std::nullopt,
+        };
+    }
+
+    bool next_result{true};
+    std::optional<radius::AccountingRequest> last_request;
+    int account_calls{0};
+
+    bool account(const radius::AccountingRequest& request) override {
+        last_request = request;
+        ++account_calls;
+        return next_result;
+    }
+};
+
 class FakePeerController final : public wireguard::PeerController {
 public:
     bool next_result{true};
@@ -47,9 +68,10 @@ public:
 }  // namespace
 
 TEST_CASE(command_executor_executes_remove_peer_via_peer_controller) {
+    FakeRadiusClient radius_client;
     FakePeerController peer_controller;
     FakeTrafficShaper traffic_shaper;
-    application::CommandExecutor executor{"wg0", peer_controller, traffic_shaper};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
     domain::Command command{
         .type = domain::CommandType::RemovePeer,
         .peer_public_key = "peer-a",
@@ -66,10 +88,11 @@ TEST_CASE(command_executor_executes_remove_peer_via_peer_controller) {
 }
 
 TEST_CASE(command_executor_reports_failed_remove_peer) {
+    FakeRadiusClient radius_client;
     FakePeerController peer_controller;
     FakeTrafficShaper traffic_shaper;
     peer_controller.next_result = false;
-    application::CommandExecutor executor{"wg0", peer_controller, traffic_shaper};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
 
     const auto result = executor.execute({
         .type = domain::CommandType::RemovePeer,
@@ -82,9 +105,10 @@ TEST_CASE(command_executor_reports_failed_remove_peer) {
 }
 
 TEST_CASE(command_executor_executes_apply_session_policy_via_traffic_shaper) {
+    FakeRadiusClient radius_client;
     FakePeerController peer_controller;
     FakeTrafficShaper traffic_shaper;
-    application::CommandExecutor executor{"wg0", peer_controller, traffic_shaper};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
 
     const auto result = executor.execute({
         .type = domain::CommandType::ApplySessionPolicy,
@@ -101,9 +125,10 @@ TEST_CASE(command_executor_executes_apply_session_policy_via_traffic_shaper) {
 }
 
 TEST_CASE(command_executor_executes_command_batch_in_order) {
+    FakeRadiusClient radius_client;
     FakePeerController peer_controller;
     FakeTrafficShaper traffic_shaper;
-    application::CommandExecutor executor{"wg0", peer_controller, traffic_shaper};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
     const std::vector<domain::Command> commands{
         {.type = domain::CommandType::SendAccessRequest, .peer_public_key = "peer-a", .accounting_session_id = std::nullopt, .policy = std::nullopt},
         {.type = domain::CommandType::RemovePeer, .peer_public_key = "peer-b", .accounting_session_id = std::nullopt, .policy = std::nullopt},
@@ -118,13 +143,11 @@ TEST_CASE(command_executor_executes_command_batch_in_order) {
     EXPECT_EQ(peer_controller.last_peer_public_key, "peer-b");
 }
 
-// TODO(stage-1/accounting, stage-3/blocking): re-enable after CommandExecutor
-// gets operational backends for accounting and block-peer side effects.
-#if 0
 TEST_CASE(command_executor_must_execute_start_accounting_instead_of_ignoring_it) {
+    FakeRadiusClient radius_client;
     FakePeerController peer_controller;
     FakeTrafficShaper traffic_shaper;
-    application::CommandExecutor executor{"wg0", peer_controller, traffic_shaper};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
 
     const auto result = executor.execute({
         .type = domain::CommandType::StartAccounting,
@@ -134,12 +157,19 @@ TEST_CASE(command_executor_must_execute_start_accounting_instead_of_ignoring_it)
     });
 
     EXPECT_EQ(result.status, application::CommandExecutionStatus::Executed);
+    EXPECT_EQ(radius_client.account_calls, 1);
+    EXPECT_TRUE(radius_client.last_request.has_value());
+    EXPECT_EQ(radius_client.last_request->event_type, radius::AccountingEventType::Start);
+    EXPECT_EQ(radius_client.last_request->interface_name, "wg0");
+    EXPECT_EQ(radius_client.last_request->peer_public_key, "peer-a");
+    EXPECT_EQ(radius_client.last_request->accounting_session_id, "acct-1");
 }
 
 TEST_CASE(command_executor_must_execute_stop_accounting_instead_of_ignoring_it) {
+    FakeRadiusClient radius_client;
     FakePeerController peer_controller;
     FakeTrafficShaper traffic_shaper;
-    application::CommandExecutor executor{"wg0", peer_controller, traffic_shaper};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
 
     const auto result = executor.execute({
         .type = domain::CommandType::StopAccounting,
@@ -149,12 +179,16 @@ TEST_CASE(command_executor_must_execute_stop_accounting_instead_of_ignoring_it) 
     });
 
     EXPECT_EQ(result.status, application::CommandExecutionStatus::Executed);
+    EXPECT_EQ(radius_client.account_calls, 1);
+    EXPECT_TRUE(radius_client.last_request.has_value());
+    EXPECT_EQ(radius_client.last_request->event_type, radius::AccountingEventType::Stop);
 }
 
 TEST_CASE(command_executor_must_execute_block_peer_instead_of_ignoring_it) {
+    FakeRadiusClient radius_client;
     FakePeerController peer_controller;
     FakeTrafficShaper traffic_shaper;
-    application::CommandExecutor executor{"wg0", peer_controller, traffic_shaper};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
 
     const auto result = executor.execute({
         .type = domain::CommandType::BlockPeer,
@@ -164,5 +198,6 @@ TEST_CASE(command_executor_must_execute_block_peer_instead_of_ignoring_it) {
     });
 
     EXPECT_EQ(result.status, application::CommandExecutionStatus::Executed);
+    EXPECT_EQ(peer_controller.remove_calls, 1);
+    EXPECT_EQ(peer_controller.last_peer_public_key, "peer-a");
 }
-#endif

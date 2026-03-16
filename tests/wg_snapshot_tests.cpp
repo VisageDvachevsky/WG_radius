@@ -88,6 +88,8 @@ TEST_CASE(snapshot_differ_emits_handshake_observed_when_handshake_appears) {
     EXPECT_EQ(events.size(), 1U);
     EXPECT_EQ(events.front().type, EventType::HandshakeObserved);
     EXPECT_EQ(events.front().peer_public_key, "peer-a");
+    EXPECT_EQ(events.front().endpoint, std::optional<std::string>{"198.51.100.10:12345"});
+    EXPECT_EQ(events.front().allowed_ips.size(), 1U);
 }
 
 TEST_CASE(snapshot_differ_emits_peer_observed_for_new_runtime_peer) {
@@ -137,13 +139,10 @@ TEST_CASE(snapshot_differ_emits_handshake_observed_and_traffic_update) {
     const auto events = normalize(SnapshotDiffer::diff(previous, *current));
 
     EXPECT_EQ(events.size(), 2U);
-    EXPECT_EQ(events.at(0).first, EventType::HandshakeObserved);
+    EXPECT_EQ(events.at(0).first, EventType::HandshakeRefreshed);
     EXPECT_EQ(events.at(1).first, EventType::TrafficUpdated);
 }
 
-// TODO(stage-1/observer-semantics): re-enable once the event model separates
-// first handshake from handshake refresh per spec.
-#if 0
 TEST_CASE(snapshot_differ_must_distinguish_first_handshake_from_handshake_refresh_per_spec) {
     const auto previous = SnapshotParser::parse_dump(
         "wg0",
@@ -160,4 +159,3 @@ TEST_CASE(snapshot_differ_must_distinguish_first_handshake_from_handshake_refres
     EXPECT_TRUE(HasHandshakeRefreshed<EventType>);
     EXPECT_EQ(events.at(1).type, EventType::TrafficUpdated);
 }
-#endif

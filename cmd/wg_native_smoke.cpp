@@ -8,6 +8,23 @@
 
 namespace {
 
+class NoopRadiusClient final : public wg_radius::radius::RadiusClient {
+public:
+    [[nodiscard]] wg_radius::radius::AuthorizationResponse authorize(
+        const wg_radius::radius::AuthorizationRequest& request) override {
+        (void)request;
+        return {
+            .decision = wg_radius::radius::AuthorizationDecision::Error,
+            .policy = std::nullopt,
+        };
+    }
+
+    [[nodiscard]] bool account(const wg_radius::radius::AccountingRequest& request) override {
+        (void)request;
+        return true;
+    }
+};
+
 int print_usage() {
     std::cerr << "usage:\n";
     std::cerr << "  wg_native_smoke snapshot <iface>\n";
@@ -76,10 +93,12 @@ int main(int argc, char** argv) {
             return print_usage();
         }
 
+        NoopRadiusClient radius_client;
         wg_radius::wireguard::NetlinkPeerController controller;
         wg_radius::shaping::NoopTrafficShaper traffic_shaper;
         wg_radius::application::CommandExecutor executor{
             interface_name,
+            radius_client,
             controller,
             traffic_shaper,
         };

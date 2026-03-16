@@ -55,6 +55,23 @@ wait_for_grep() {
     return 1
 }
 
+wait_for_docker_log() {
+    local pattern=$1
+    local attempts=${2:-80}
+    local delay=${3:-0.1}
+
+    for _ in $(seq 1 "$attempts"); do
+        if docker logs "$radius_container" 2>&1 | grep -q -- "$pattern"; then
+            return 0
+        fi
+        sleep "$delay"
+    done
+
+    echo "pattern not found in docker logs: $pattern" >&2
+    dump_diagnostics
+    return 1
+}
+
 if ! sudo_pw true >/dev/null 2>&1; then
     echo "sudo authentication failed; skipping integration test" >&2
     exit 77
@@ -200,10 +217,10 @@ server default {
 
     post-auth {
         wg_phase1_access_accept
-    }
 
-    Post-Auth-Type Reject {
-        wg_phase1_access_reject
+        Post-Auth-Type Reject {
+            wg_phase1_access_reject
+        }
     }
 
     accounting {
@@ -277,6 +294,8 @@ sleep 0.4
 
 sudo_pw wg set "$iface_name" peer "$accept_public_key" allowed-ips "$accept_ip"
 wait_for_grep "auth-request user=$accept_public_key" "$radius_log"
+wait_for_docker_log "Received packet with Message-Authenticator."
+wait_for_docker_log "Message-Authenticator ="
 wait_for_grep "access-accept user=$accept_public_key" "$radius_log"
 wait_for_grep "accounting user=$accept_public_key status=Start" "$radius_log"
 
@@ -297,6 +316,12 @@ done
 if sudo_pw wg show "$iface_name" peers | grep -q "$reject_public_key"; then
     echo "reject peer still present on interface after Access-Reject" >&2
     sudo_pw wg show "$iface_name" >&2 || true
+    exit 1
+fi
+
+if docker logs "$radius_container" 2>&1 | grep -q "Received packet without Message-Authenticator"; then
+    echo "freeradius reported Access-Request without Message-Authenticator" >&2
+    dump_diagnostics
     exit 1
 fi
 

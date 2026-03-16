@@ -8,7 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBNL REQUIRED IMPORTED_TARGET libnl-3.0 libnl-genl-3.0)
-pkg_check_modules(RADCLI REQUIRED IMPORTED_TARGET radcli)
+pkg_check_modules(RADCLI REQUIRED IMPORTED_TARGET radcli>=1.4.0)
 
 enable_testing()
 

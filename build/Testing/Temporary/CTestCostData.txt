@@ -1,4 +1,0 @@
-wg_radius_domain_tests 40 0.00106746
-wg_radius_phase1_integration 3 0
-wg_radius_phase1_radius_integration 3 0
----

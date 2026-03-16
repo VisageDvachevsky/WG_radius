@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <mutex>
+#include <string>
 
 struct rc_conf;
 
@@ -28,9 +29,12 @@ private:
     };
 
     [[nodiscard]] bool initialize_handle();
+    [[nodiscard]] bool create_servers_file();
+    void cleanup_servers_file() noexcept;
 
     RadiusProfile profile_;
     std::unique_ptr<rc_conf, HandleDeleter> handle_;
+    std::string servers_file_path_;
     bool initialized_{false};
     std::mutex mutex_;
 };

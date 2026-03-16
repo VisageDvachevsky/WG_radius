@@ -2537,6 +2537,7 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/c++/15/bits/cxxabi_forced.h \
   /usr/include/c++/15/bits/cxxabi_init_exception.h \
   /usr/include/c++/15/bits/enable_special_members.h \
+  /usr/include/c++/15/bits/erase_if.h \
   /usr/include/c++/15/bits/exception.h \
   /usr/include/c++/15/bits/exception_defines.h \
   /usr/include/c++/15/bits/exception_ptr.h \
@@ -2563,6 +2564,7 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/c++/15/bits/move.h \
   /usr/include/c++/15/bits/nested_exception.h \
   /usr/include/c++/15/bits/new_allocator.h \
+  /usr/include/c++/15/bits/node_handle.h \
   /usr/include/c++/15/bits/ostream.h \
   /usr/include/c++/15/bits/ostream.tcc \
   /usr/include/c++/15/bits/ostream_insert.h \
@@ -2595,9 +2597,12 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/c++/15/bits/stl_iterator.h \
   /usr/include/c++/15/bits/stl_iterator_base_funcs.h \
   /usr/include/c++/15/bits/stl_iterator_base_types.h \
+  /usr/include/c++/15/bits/stl_multiset.h \
   /usr/include/c++/15/bits/stl_pair.h \
   /usr/include/c++/15/bits/stl_raw_storage_iter.h \
+  /usr/include/c++/15/bits/stl_set.h \
   /usr/include/c++/15/bits/stl_tempbuf.h \
+  /usr/include/c++/15/bits/stl_tree.h \
   /usr/include/c++/15/bits/stl_uninitialized.h \
   /usr/include/c++/15/bits/stl_vector.h \
   /usr/include/c++/15/bits/streambuf.tcc \
@@ -2626,6 +2631,7 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/c++/15/cstdint \
   /usr/include/c++/15/cstdio \
   /usr/include/c++/15/cstdlib \
+  /usr/include/c++/15/cstring \
   /usr/include/c++/15/ctime \
   /usr/include/c++/15/cwchar \
   /usr/include/c++/15/cwctype \
@@ -2644,6 +2650,7 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/c++/15/iomanip \
   /usr/include/c++/15/ios \
   /usr/include/c++/15/iosfwd \
+  /usr/include/c++/15/iostream \
   /usr/include/c++/15/istream \
   /usr/include/c++/15/limits \
   /usr/include/c++/15/locale \
@@ -2657,6 +2664,7 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/c++/15/pstl/glue_memory_defs.h \
   /usr/include/c++/15/pstl/pstl_config.h \
   /usr/include/c++/15/ratio \
+  /usr/include/c++/15/set \
   /usr/include/c++/15/span \
   /usr/include/c++/15/sstream \
   /usr/include/c++/15/stdexcept \
@@ -2671,12 +2679,14 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/ctype.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
+  /usr/include/fcntl.h \
   /usr/include/features-time64.h \
   /usr/include/features.h \
   /usr/include/libintl.h \
   /usr/include/limits.h \
   /usr/include/linux/close_range.h \
   /usr/include/linux/errno.h \
+  /usr/include/linux/falloc.h \
   /usr/include/linux/limits.h \
   /usr/include/linux/posix_types.h \
   /usr/include/linux/sched/types.h \
@@ -2693,6 +2703,8 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/stdint.h \
   /usr/include/stdio.h \
   /usr/include/stdlib.h \
+  /usr/include/string.h \
+  /usr/include/strings.h \
   /usr/include/syscall.h \
   /usr/include/time.h \
   /usr/include/unistd.h \
@@ -2706,6 +2718,8 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/x86_64-linux-gnu/bits/endianness.h \
   /usr/include/x86_64-linux-gnu/bits/environments.h \
   /usr/include/x86_64-linux-gnu/bits/errno.h \
+  /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
+  /usr/include/x86_64-linux-gnu/bits/fcntl.h \
   /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
   /usr/include/x86_64-linux-gnu/bits/floatn.h \
   /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
@@ -2728,6 +2742,7 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/x86_64-linux-gnu/bits/sockaddr.h \
   /usr/include/x86_64-linux-gnu/bits/socket.h \
   /usr/include/x86_64-linux-gnu/bits/socket_type.h \
+  /usr/include/x86_64-linux-gnu/bits/stat.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-least.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
@@ -2735,6 +2750,7 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
   /usr/include/x86_64-linux-gnu/bits/struct_mutex.h \
   /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_stat.h \
   /usr/include/x86_64-linux-gnu/bits/syscall.h \
   /usr/include/x86_64-linux-gnu/bits/thread-shared-types.h \
   /usr/include/x86_64-linux-gnu/bits/time.h \
@@ -4007,8 +4023,6 @@ CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.o: /home/visage/Р
 
 /usr/include/x86_64-linux-gnu/bits/poll.h:
 
-/usr/include/string.h:
-
 /usr/include/linux/rtnetlink.h:
 
 /usr/include/linux/if_link.h:
@@ -4033,12 +4047,6 @@ CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.o: /home/visage/Р
 
 /home/visage/Рабочий\ стол/WG_radius/src/wireguard/netlink_peer_controller.cpp:
 
-/home/visage/Рабочий\ стол/WG_radius/include/wg_radius/shaping/noop_traffic_shaper.hpp:
-
-/usr/include/x86_64-linux-gnu/sys/socket.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h:
-
 /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/sigevent_t.h:
@@ -4047,7 +4055,21 @@ CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.o: /home/visage/Р
 
 /usr/include/x86_64-linux-gnu/bits/sockaddr.h:
 
+/usr/include/x86_64-linux-gnu/bits/fcntl-linux.h:
+
+/usr/include/string.h:
+
+/home/visage/Рабочий\ стол/WG_radius/include/wg_radius/shaping/noop_traffic_shaper.hpp:
+
+/usr/include/fcntl.h:
+
 /usr/include/c++/15/memory:
+
+/usr/include/x86_64-linux-gnu/sys/socket.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h:
+
+/usr/include/c++/15/bits/stl_set.h:
 
 /usr/include/c++/15/bits/shared_ptr_atomic.h:
 
@@ -4201,11 +4223,17 @@ CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.o: /home/visage/Р
 
 /usr/include/features-time64.h:
 
+/usr/include/c++/15/bits/stl_multiset.h:
+
 /usr/include/c++/15/bits/unicode.h:
+
+/usr/include/c++/15/iostream:
 
 /usr/include/c++/15/bits/vector.tcc:
 
 /usr/include/c++/15/bits/string_view.tcc:
+
+/usr/include/x86_64-linux-gnu/bits/struct_stat.h:
 
 /usr/include/c++/15/bits/streambuf_iterator.h:
 
@@ -4310,6 +4338,8 @@ CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.o: /home/visage/Р
 /usr/lib/gcc/x86_64-linux-gnu/15/include/limits.h:
 
 /usr/include/c++/15/bits/monostate.h:
+
+/usr/include/c++/15/set:
 
 /usr/include/c++/15/bits/memory_resource.h:
 
@@ -4521,6 +4551,8 @@ CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.o: /home/visage/Р
 
 /usr/include/c++/15/variant:
 
+/usr/include/c++/15/bits/stl_tree.h:
+
 /usr/include/c++/15/bits/enable_special_members.h:
 
 /usr/include/libnl3/netlink/cache.h:
@@ -4530,6 +4562,8 @@ CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.o: /home/visage/Р
 /home/visage/Рабочий\ стол/WG_radius/src/application/wg_event_router.cpp:
 
 /usr/include/limits.h:
+
+/usr/include/x86_64-linux-gnu/bits/fcntl.h:
 
 /usr/include/c++/15/bits/char_traits.h:
 
@@ -4568,6 +4602,8 @@ CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.o: /home/visage/Р
 /usr/include/c++/15/iomanip:
 
 /usr/include/x86_64-linux-gnu/bits/in.h:
+
+/usr/include/linux/falloc.h:
 
 /home/visage/Рабочий\ стол/WG_radius/src/domain/session_manager.cpp:
 
@@ -4723,6 +4759,8 @@ CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.o: /home/visage/Р
 
 /usr/include/c++/15/stdexcept:
 
+/usr/include/x86_64-linux-gnu/bits/stat.h:
+
 /usr/include/c++/15/stop_token:
 
 /usr/include/c++/15/string:
@@ -4801,9 +4839,9 @@ CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.o: /home/visage/Р
 
 /usr/include/x86_64-linux-gnu/bits/locale.h:
 
-/usr/include/c++/15/cstring:
-
 /usr/include/linux/netfilter/nfnetlink_compat.h:
+
+/usr/include/c++/15/cstring:
 
 /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h:
 

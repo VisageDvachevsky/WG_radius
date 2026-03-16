@@ -106,4 +106,18 @@ if(WG_RADIUS_ENABLE_INTEGRATION_TESTS)
             LABELS "integration;wireguard;phase1"
             SKIP_RETURN_CODE 77
     )
+
+    add_test(
+        NAME wg_radius_phase1_radius_integration
+        COMMAND
+            ${CMAKE_SOURCE_DIR}/tests/integration/phase1_real_radius_flow.sh
+            ${CMAKE_BINARY_DIR}/wg_radiusd
+            ${CMAKE_SOURCE_DIR}
+    )
+    set_tests_properties(
+        wg_radius_phase1_radius_integration
+        PROPERTIES
+            LABELS "integration;wireguard;radius;phase1"
+            SKIP_RETURN_CODE 77
+    )
 endif()

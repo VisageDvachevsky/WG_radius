@@ -1,10 +1,10 @@
-Start testing: Mar 16 20:44 MSK
+Start testing: Mar 16 20:57 MSK
 ----------------------------------------------------------
 1/1 Testing: wg_radius_domain_tests
 1/1 Test: wg_radius_domain_tests
 Command: "/home/visage/Рабочий стол/WG_radius/build/wg_radius_domain_tests"
 Directory: /home/visage/Рабочий стол/WG_radius/build
-"wg_radius_domain_tests" start time: Mar 16 20:44 MSK
+"wg_radius_domain_tests" start time: Mar 16 20:57 MSK
 Output:
 ----------------------------------------------------------
 [PASS] async_auth_processor_processes_access_request_in_background
@@ -35,6 +35,9 @@ Output:
 [PASS] accounting_stop_is_two_phase
 [PASS] handshake_observed_does_not_create_auth_for_blocked_session
 [PASS] peer_present_returns_true_again_after_re_observation
+[PASS] phase1_smoke_accept_path_authorizes_applies_policy_and_starts_accounting
+[PASS] phase1_smoke_reject_remove_path_removes_peer_without_accounting_start
+[PASS] phase1_smoke_active_peer_removal_sends_accounting_stop
 [PASS] profile_runtime_submits_auth_commands_from_polling_result
 [PASS] profile_runtime_executes_follow_up_commands_from_auth_results
 [PASS] profile_runtime_must_continue_with_accounting_commands_after_successful_auth
@@ -72,11 +75,11 @@ Output:
 [PASS] snapshot_differ_emits_handshake_observed_and_traffic_update
 [PASS] snapshot_differ_must_distinguish_first_handshake_from_handshake_refresh_per_spec
 <end of output>
-Test time =   0.01 sec
+Test time =   0.04 sec
 ----------------------------------------------------------
 Test Passed.
-"wg_radius_domain_tests" end time: Mar 16 20:44 MSK
+"wg_radius_domain_tests" end time: Mar 16 20:57 MSK
 "wg_radius_domain_tests" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-End testing: Mar 16 20:44 MSK
+End testing: Mar 16 20:57 MSK

@@ -44,6 +44,7 @@ add_executable(
     tests/command_executor_tests.cpp
     tests/config_parser_tests.cpp
     tests/peer_session_tests.cpp
+    tests/phase1_smoke_tests.cpp
     tests/profile_runtime_tests.cpp
     tests/session_manager_tests.cpp
     tests/wg_event_router_tests.cpp

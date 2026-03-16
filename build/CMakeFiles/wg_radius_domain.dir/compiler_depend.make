@@ -2512,6 +2512,7 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/asm-generic/sockios.h \
   /usr/include/asm-generic/types.h \
   /usr/include/c++/15/array \
+  /usr/include/c++/15/backward/auto_ptr.h \
   /usr/include/c++/15/backward/binders.h \
   /usr/include/c++/15/bit \
   /usr/include/c++/15/bits/algorithmfwd.h \
@@ -2519,6 +2520,9 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/c++/15/bits/alloc_traits.h \
   /usr/include/c++/15/bits/allocated_ptr.h \
   /usr/include/c++/15/bits/allocator.h \
+  /usr/include/c++/15/bits/atomic_base.h \
+  /usr/include/c++/15/bits/atomic_lockfree_defines.h \
+  /usr/include/c++/15/bits/atomic_wait.h \
   /usr/include/c++/15/bits/basic_ios.h \
   /usr/include/c++/15/bits/basic_ios.tcc \
   /usr/include/c++/15/bits/basic_string.h \
@@ -2562,6 +2566,7 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/c++/15/bits/ostream.h \
   /usr/include/c++/15/bits/ostream.tcc \
   /usr/include/c++/15/bits/ostream_insert.h \
+  /usr/include/c++/15/bits/out_ptr.h \
   /usr/include/c++/15/bits/parse_numbers.h \
   /usr/include/c++/15/bits/postypes.h \
   /usr/include/c++/15/bits/predefined_ops.h \
@@ -2571,13 +2576,16 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/c++/15/bits/ranges_algobase.h \
   /usr/include/c++/15/bits/ranges_base.h \
   /usr/include/c++/15/bits/ranges_cmp.h \
+  /usr/include/c++/15/bits/ranges_uninitialized.h \
   /usr/include/c++/15/bits/ranges_util.h \
   /usr/include/c++/15/bits/refwrap.h \
   /usr/include/c++/15/bits/requires_hosted.h \
   /usr/include/c++/15/bits/shared_ptr.h \
+  /usr/include/c++/15/bits/shared_ptr_atomic.h \
   /usr/include/c++/15/bits/shared_ptr_base.h \
   /usr/include/c++/15/bits/sstream.tcc \
   /usr/include/c++/15/bits/std_abs.h \
+  /usr/include/c++/15/bits/std_mutex.h \
   /usr/include/c++/15/bits/stl_algo.h \
   /usr/include/c++/15/bits/stl_algobase.h \
   /usr/include/c++/15/bits/stl_bvector.h \
@@ -2588,6 +2596,7 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/c++/15/bits/stl_iterator_base_funcs.h \
   /usr/include/c++/15/bits/stl_iterator_base_types.h \
   /usr/include/c++/15/bits/stl_pair.h \
+  /usr/include/c++/15/bits/stl_raw_storage_iter.h \
   /usr/include/c++/15/bits/stl_tempbuf.h \
   /usr/include/c++/15/bits/stl_uninitialized.h \
   /usr/include/c++/15/bits/stl_vector.h \
@@ -2598,6 +2607,7 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/c++/15/bits/unicode-data.h \
   /usr/include/c++/15/bits/unicode.h \
   /usr/include/c++/15/bits/uniform_int_dist.h \
+  /usr/include/c++/15/bits/unique_lock.h \
   /usr/include/c++/15/bits/unique_ptr.h \
   /usr/include/c++/15/bits/uses_allocator.h \
   /usr/include/c++/15/bits/uses_allocator_args.h \
@@ -2608,6 +2618,7 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/c++/15/cerrno \
   /usr/include/c++/15/charconv \
   /usr/include/c++/15/chrono \
+  /usr/include/c++/15/climits \
   /usr/include/c++/15/clocale \
   /usr/include/c++/15/compare \
   /usr/include/c++/15/concepts \
@@ -2636,10 +2647,14 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/c++/15/istream \
   /usr/include/c++/15/limits \
   /usr/include/c++/15/locale \
+  /usr/include/c++/15/memory \
+  /usr/include/c++/15/mutex \
   /usr/include/c++/15/new \
   /usr/include/c++/15/numbers \
   /usr/include/c++/15/optional \
   /usr/include/c++/15/ostream \
+  /usr/include/c++/15/pstl/execution_defs.h \
+  /usr/include/c++/15/pstl/glue_memory_defs.h \
   /usr/include/c++/15/pstl/pstl_config.h \
   /usr/include/c++/15/ratio \
   /usr/include/c++/15/span \
@@ -2659,7 +2674,10 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/features-time64.h \
   /usr/include/features.h \
   /usr/include/libintl.h \
+  /usr/include/limits.h \
+  /usr/include/linux/close_range.h \
   /usr/include/linux/errno.h \
+  /usr/include/linux/limits.h \
   /usr/include/linux/posix_types.h \
   /usr/include/linux/sched/types.h \
   /usr/include/linux/stddef.h \
@@ -2675,22 +2693,32 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/stdint.h \
   /usr/include/stdio.h \
   /usr/include/stdlib.h \
+  /usr/include/syscall.h \
   /usr/include/time.h \
+  /usr/include/unistd.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h \
   /usr/include/x86_64-linux-gnu/bits/byteswap.h \
+  /usr/include/x86_64-linux-gnu/bits/confname.h \
   /usr/include/x86_64-linux-gnu/bits/cpu-set.h \
   /usr/include/x86_64-linux-gnu/bits/endian.h \
   /usr/include/x86_64-linux-gnu/bits/endianness.h \
+  /usr/include/x86_64-linux-gnu/bits/environments.h \
   /usr/include/x86_64-linux-gnu/bits/errno.h \
   /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
   /usr/include/x86_64-linux-gnu/bits/floatn.h \
+  /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
+  /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
   /usr/include/x86_64-linux-gnu/bits/in.h \
   /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
+  /usr/include/x86_64-linux-gnu/bits/local_lim.h \
   /usr/include/x86_64-linux-gnu/bits/locale.h \
   /usr/include/x86_64-linux-gnu/bits/long-double.h \
   /usr/include/x86_64-linux-gnu/bits/netdb.h \
+  /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
   /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
   /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h \
   /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h \
@@ -2707,6 +2735,7 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
   /usr/include/x86_64-linux-gnu/bits/struct_mutex.h \
   /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h \
+  /usr/include/x86_64-linux-gnu/bits/syscall.h \
   /usr/include/x86_64-linux-gnu/bits/thread-shared-types.h \
   /usr/include/x86_64-linux-gnu/bits/time.h \
   /usr/include/x86_64-linux-gnu/bits/time64.h \
@@ -2743,11 +2772,14 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/x86_64-linux-gnu/bits/types/wint_t.h \
   /usr/include/x86_64-linux-gnu/bits/typesizes.h \
   /usr/include/x86_64-linux-gnu/bits/uintn-identity.h \
+  /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
   /usr/include/x86_64-linux-gnu/bits/waitflags.h \
   /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
   /usr/include/x86_64-linux-gnu/bits/wchar.h \
   /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/c++/15/bits/atomic_word.h \
   /usr/include/x86_64-linux-gnu/c++/15/bits/c++allocator.h \
   /usr/include/x86_64-linux-gnu/c++/15/bits/c++config.h \
@@ -2767,17 +2799,22 @@ CMakeFiles/wg_radius_domain.dir/src/radius/radcli_radius_client.cpp.o: /home/vis
   /usr/include/x86_64-linux-gnu/sys/select.h \
   /usr/include/x86_64-linux-gnu/sys/single_threaded.h \
   /usr/include/x86_64-linux-gnu/sys/socket.h \
+  /usr/include/x86_64-linux-gnu/sys/syscall.h \
   /usr/include/x86_64-linux-gnu/sys/types.h \
+  /usr/lib/gcc/x86_64-linux-gnu/15/include/limits.h \
   /usr/lib/gcc/x86_64-linux-gnu/15/include/stdarg.h \
   /usr/lib/gcc/x86_64-linux-gnu/15/include/stddef.h \
   /usr/lib/gcc/x86_64-linux-gnu/15/include/stdint.h \
+  /usr/lib/gcc/x86_64-linux-gnu/15/include/syslimits.h \
   /usr/lib/linux/uapi/x86/asm/bitsperlong.h \
   /usr/lib/linux/uapi/x86/asm/errno.h \
   /usr/lib/linux/uapi/x86/asm/posix_types.h \
   /usr/lib/linux/uapi/x86/asm/posix_types_64.h \
   /usr/lib/linux/uapi/x86/asm/socket.h \
   /usr/lib/linux/uapi/x86/asm/sockios.h \
-  /usr/lib/linux/uapi/x86/asm/types.h
+  /usr/lib/linux/uapi/x86/asm/types.h \
+  /usr/lib/linux/uapi/x86/asm/unistd.h \
+  /usr/lib/linux/uapi/x86/asm/unistd_64.h
 
 CMakeFiles/wg_radius_domain.dir/src/shaping/noop_traffic_shaper.cpp.o: /home/visage/Рабочий\ стол/WG_radius/src/shaping/noop_traffic_shaper.cpp \
   /home/visage/Рабочий\ стол/WG_radius/include/wg_radius/domain/peer_session.hpp \
@@ -3992,12 +4029,6 @@ CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.o: /home/visage/Р
 
 /usr/include/libnl3/netlink/attr.h:
 
-/usr/include/c++/15/memory:
-
-/usr/include/c++/15/bits/shared_ptr_atomic.h:
-
-/usr/include/c++/15/bits/ranges_uninitialized.h:
-
 /home/visage/Рабочий\ стол/WG_radius/include/wg_radius/wireguard/netlink_peer_controller.hpp:
 
 /home/visage/Рабочий\ стол/WG_radius/src/wireguard/netlink_peer_controller.cpp:
@@ -4015,6 +4046,12 @@ CMakeFiles/wg_radius_domain.dir/src/wireguard/wg_snapshot.cpp.o: /home/visage/Р
 /usr/include/x86_64-linux-gnu/bits/types/__sigval_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/sockaddr.h:
+
+/usr/include/c++/15/memory:
+
+/usr/include/c++/15/bits/shared_ptr_atomic.h:
+
+/usr/include/c++/15/bits/ranges_uninitialized.h:
 
 /home/visage/Рабочий\ стол/WG_radius/src/radius/radcli_radius_client.cpp:
 

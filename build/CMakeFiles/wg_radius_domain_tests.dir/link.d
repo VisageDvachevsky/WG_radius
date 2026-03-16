@@ -8,6 +8,7 @@ wg_radius_domain_tests: \
   CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.o \
   CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o \
   CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o \
+  CMakeFiles/wg_radius_domain_tests.dir/tests/phase1_smoke_tests.cpp.o \
   CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o \
   CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o \
   CMakeFiles/wg_radius_domain_tests.dir/tests/wg_event_router_tests.cpp.o \
@@ -63,6 +64,8 @@ CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.o:
 CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o:
 
 CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o:
+
+CMakeFiles/wg_radius_domain_tests.dir/tests/phase1_smoke_tests.cpp.o:
 
 CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o:
 

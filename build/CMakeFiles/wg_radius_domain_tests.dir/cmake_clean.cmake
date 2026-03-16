@@ -10,6 +10,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o.d"
   "CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o"
   "CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o.d"
+  "CMakeFiles/wg_radius_domain_tests.dir/tests/phase1_smoke_tests.cpp.o"
+  "CMakeFiles/wg_radius_domain_tests.dir/tests/phase1_smoke_tests.cpp.o.d"
   "CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o"
   "CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o.d"
   "CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o"

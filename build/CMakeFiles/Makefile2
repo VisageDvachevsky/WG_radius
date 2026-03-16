@@ -126,12 +126,12 @@ CMakeFiles/wg_radius_domain.dir/clean:
 CMakeFiles/wg_radius_domain_tests.dir/all: CMakeFiles/wg_radius_domain.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=18,19,20,21,22,23,24,25,26,27,28,29 "Built target wg_radius_domain_tests"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=18,19,20,21,22,23,24,25,26,27,28,29,30 "Built target wg_radius_domain_tests"
 .PHONY : CMakeFiles/wg_radius_domain_tests.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/wg_radius_domain_tests.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" 27
+	$(CMAKE_COMMAND) -E cmake_progress_start "/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" 28
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/wg_radius_domain_tests.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" 0
 .PHONY : CMakeFiles/wg_radius_domain_tests.dir/rule
@@ -143,7 +143,7 @@ wg_radius_domain_tests: CMakeFiles/wg_radius_domain_tests.dir/rule
 # codegen rule for target.
 CMakeFiles/wg_radius_domain_tests.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=18,19,20,21,22,23,24,25,26,27,28,29 "Finished codegen for target wg_radius_domain_tests"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=18,19,20,21,22,23,24,25,26,27,28,29,30 "Finished codegen for target wg_radius_domain_tests"
 .PHONY : CMakeFiles/wg_radius_domain_tests.dir/codegen
 
 # clean rule for target.
@@ -158,7 +158,7 @@ CMakeFiles/wg_radius_domain_tests.dir/clean:
 CMakeFiles/wg_radiusd.dir/all: CMakeFiles/wg_radius_domain.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radiusd.dir/build.make CMakeFiles/wg_radiusd.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radiusd.dir/build.make CMakeFiles/wg_radiusd.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=30,31 "Built target wg_radiusd"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=31,32 "Built target wg_radiusd"
 .PHONY : CMakeFiles/wg_radiusd.dir/all
 
 # Build rule for subdir invocation for target.
@@ -175,7 +175,7 @@ wg_radiusd: CMakeFiles/wg_radiusd.dir/rule
 # codegen rule for target.
 CMakeFiles/wg_radiusd.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radiusd.dir/build.make CMakeFiles/wg_radiusd.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=30,31 "Finished codegen for target wg_radiusd"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/home/visage/Рабочий стол/WG_radius/build/CMakeFiles" --progress-num=31,32 "Finished codegen for target wg_radiusd"
 .PHONY : CMakeFiles/wg_radiusd.dir/codegen
 
 # clean rule for target.

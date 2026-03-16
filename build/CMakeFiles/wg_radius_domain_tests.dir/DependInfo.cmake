@@ -13,6 +13,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/visage/Рабочий стол/WG_radius/tests/command_executor_tests.cpp" "CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.o" "gcc" "CMakeFiles/wg_radius_domain_tests.dir/tests/command_executor_tests.cpp.o.d"
   "/home/visage/Рабочий стол/WG_radius/tests/config_parser_tests.cpp" "CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o" "gcc" "CMakeFiles/wg_radius_domain_tests.dir/tests/config_parser_tests.cpp.o.d"
   "/home/visage/Рабочий стол/WG_radius/tests/peer_session_tests.cpp" "CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o" "gcc" "CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.o.d"
+  "/home/visage/Рабочий стол/WG_radius/tests/phase1_smoke_tests.cpp" "CMakeFiles/wg_radius_domain_tests.dir/tests/phase1_smoke_tests.cpp.o" "gcc" "CMakeFiles/wg_radius_domain_tests.dir/tests/phase1_smoke_tests.cpp.o.d"
   "/home/visage/Рабочий стол/WG_radius/tests/profile_runtime_tests.cpp" "CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o" "gcc" "CMakeFiles/wg_radius_domain_tests.dir/tests/profile_runtime_tests.cpp.o.d"
   "/home/visage/Рабочий стол/WG_radius/tests/session_manager_tests.cpp" "CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o" "gcc" "CMakeFiles/wg_radius_domain_tests.dir/tests/session_manager_tests.cpp.o.d"
   "/home/visage/Рабочий стол/WG_radius/tests/test_main.cpp" "CMakeFiles/wg_radius_domain_tests.dir/tests/test_main.cpp.o" "gcc" "CMakeFiles/wg_radius_domain_tests.dir/tests/test_main.cpp.o.d"

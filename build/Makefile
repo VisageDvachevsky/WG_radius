@@ -689,6 +689,30 @@ tests/peer_session_tests.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/peer_session_tests.cpp.s
 .PHONY : tests/peer_session_tests.cpp.s
 
+tests/phase1_smoke_tests.o: tests/phase1_smoke_tests.cpp.o
+.PHONY : tests/phase1_smoke_tests.o
+
+# target to build an object file
+tests/phase1_smoke_tests.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/phase1_smoke_tests.cpp.o
+.PHONY : tests/phase1_smoke_tests.cpp.o
+
+tests/phase1_smoke_tests.i: tests/phase1_smoke_tests.cpp.i
+.PHONY : tests/phase1_smoke_tests.i
+
+# target to preprocess a source file
+tests/phase1_smoke_tests.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/phase1_smoke_tests.cpp.i
+.PHONY : tests/phase1_smoke_tests.cpp.i
+
+tests/phase1_smoke_tests.s: tests/phase1_smoke_tests.cpp.s
+.PHONY : tests/phase1_smoke_tests.s
+
+# target to generate assembly for a file
+tests/phase1_smoke_tests.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/wg_radius_domain_tests.dir/build.make CMakeFiles/wg_radius_domain_tests.dir/tests/phase1_smoke_tests.cpp.s
+.PHONY : tests/phase1_smoke_tests.cpp.s
+
 tests/profile_runtime_tests.o: tests/profile_runtime_tests.cpp.o
 .PHONY : tests/profile_runtime_tests.o
 
@@ -910,6 +934,9 @@ help:
 	@echo "... tests/peer_session_tests.o"
 	@echo "... tests/peer_session_tests.i"
 	@echo "... tests/peer_session_tests.s"
+	@echo "... tests/phase1_smoke_tests.o"
+	@echo "... tests/phase1_smoke_tests.i"
+	@echo "... tests/phase1_smoke_tests.s"
 	@echo "... tests/profile_runtime_tests.o"
 	@echo "... tests/profile_runtime_tests.i"
 	@echo "... tests/profile_runtime_tests.s"

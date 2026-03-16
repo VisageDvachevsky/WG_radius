@@ -12,6 +12,8 @@ pkg_check_modules(RADCLI REQUIRED IMPORTED_TARGET radcli)
 
 enable_testing()
 
+option(WG_RADIUS_ENABLE_INTEGRATION_TESTS "Enable opt-in integration tests that require sudo and real WireGuard" OFF)
+
 add_library(
     wg_radius_domain
     src/config/config_parser.cpp
@@ -88,3 +90,20 @@ target_link_libraries(
     PRIVATE
         wg_radius_domain
 )
+
+if(WG_RADIUS_ENABLE_INTEGRATION_TESTS)
+    add_test(
+        NAME wg_radius_phase1_integration
+        COMMAND
+            ${CMAKE_SOURCE_DIR}/tests/integration/phase1_real_wg_smoke.sh
+            ${CMAKE_BINARY_DIR}/wg_native_smoke
+            ${CMAKE_BINARY_DIR}/wg_radiusd
+            ${CMAKE_SOURCE_DIR}
+    )
+    set_tests_properties(
+        wg_radius_phase1_integration
+        PROPERTIES
+            LABELS "integration;wireguard;phase1"
+            SKIP_RETURN_CODE 77
+    )
+endif()

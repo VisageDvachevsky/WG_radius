@@ -210,6 +210,9 @@ PKG_CONFIG_ARGN:STRING=
 //pkg-config executable
 PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/bin/pkg-config
 
+//Enable opt-in integration tests that require sudo and real WireGuard
+WG_RADIUS_ENABLE_INTEGRATION_TESTS:BOOL=ON
+
 //Path to a library.
 pkgcfg_lib_LIBNL_nl-3:FILEPATH=/usr/lib/x86_64-linux-gnu/libnl-3.so
 

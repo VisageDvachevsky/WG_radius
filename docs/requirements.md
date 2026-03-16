@@ -32,6 +32,18 @@ Additional service attributes may be sent:
 - `NAS-Identifier` / `NAS-IP-Address`;
 - `Calling-Station-Id` / `User-Name` according to agreed mapping.
 
+Operational clarification:
+
+- RADIUS logic is applied per configured WireGuard interface.
+- The daemon must support configuration as one or more `interface -> RADIUS profile` bindings.
+- The preferred deployment model is multi-instance or logically equivalent multi-profile handling, where each WireGuard interface can use its own:
+  - auth server;
+  - accounting server;
+  - CoA settings;
+  - shared secret;
+  - policy mapping and local handling rules.
+- A peer is always evaluated in the context of the specific WireGuard interface where it exists.
+
 ## 2. Authorization
 
 The daemon must support two authorization trigger modes:
@@ -97,6 +109,23 @@ Purpose of accounting:
 
 - session statistics in RADIUS;
 - active session tracking.
+
+Operational clarification for inactivity:
+
+WireGuard does not expose a canonical built-in notion of “session inactive” equivalent to stateful VPN concentrators. Therefore, inactivity must be defined by daemon policy rather than assumed from WireGuard alone.
+
+For this project, inactivity should be treated as a configurable derived condition based on one or more of:
+
+- no handshake refresh for longer than configured `inactive_timeout`;
+- no RX/TX counter changes for longer than configured `inactive_timeout`;
+- optionally both conditions together, if stricter behavior is desired.
+
+Requirements for this rule:
+
+- the inactivity strategy must be configurable;
+- defaults must be conservative to avoid false session termination;
+- the daemon must record which inactivity rule caused `Acct-Stop`;
+- the chosen rule must be documented as an operator policy, not presented as a native WireGuard session-state fact.
 
 ## 5. CoA / Disconnect
 

@@ -11,6 +11,7 @@ namespace wg_radius::domain {
 
 enum class CommandType {
     SendAccessRequest,
+    ApplySessionPolicy,
     StartAccounting,
     StopAccounting,
     RemovePeer,
@@ -20,6 +21,7 @@ enum class CommandType {
 struct Command {
     CommandType type;
     std::string peer_public_key;
+    std::optional<std::string> accounting_session_id;
     std::optional<SessionPolicy> policy;
 };
 
@@ -27,22 +29,27 @@ class SessionManager {
 public:
     SessionManager(AuthorizationTrigger trigger_mode, RejectMode reject_mode);
 
-    [[nodiscard]] std::vector<Command> on_peer_discovered(const std::string& peer_public_key);
-    [[nodiscard]] std::vector<Command> on_first_handshake(const std::string& peer_public_key);
+    void on_peer_seeded(const std::string& peer_public_key, bool handshake_seen);
+    [[nodiscard]] std::vector<Command> on_peer_observed(const std::string& peer_public_key);
+    [[nodiscard]] std::vector<Command> on_handshake_observed(const std::string& peer_public_key);
     [[nodiscard]] std::vector<Command> on_access_accept(
         const std::string& peer_public_key,
         SessionPolicy policy);
     [[nodiscard]] std::vector<Command> on_access_reject(const std::string& peer_public_key);
     [[nodiscard]] std::vector<Command> on_accounting_started(const std::string& peer_public_key);
+    [[nodiscard]] std::vector<Command> on_accounting_stopped(const std::string& peer_public_key);
+    [[nodiscard]] std::vector<Command> on_peer_blocked(const std::string& peer_public_key);
     [[nodiscard]] std::vector<Command> on_peer_removed(const std::string& peer_public_key);
 
     [[nodiscard]] const PeerSession* find_session(const std::string& peer_public_key) const;
 
 private:
+    [[nodiscard]] std::string generate_accounting_session_id(const std::string& peer_public_key);
     [[nodiscard]] PeerSession& get_or_create_session(const std::string& peer_public_key);
 
     AuthorizationTrigger trigger_mode_;
     RejectMode reject_mode_;
+    std::uint64_t next_session_id_{1};
     std::unordered_map<std::string, PeerSession> sessions_;
 };
 

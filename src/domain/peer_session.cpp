@@ -17,33 +17,44 @@ SessionState PeerSession::state() const noexcept {
     return state_;
 }
 
-AccountingState PeerSession::accounting_state() const noexcept {
-    return accounting_state_;
-}
-
 bool PeerSession::first_handshake_seen() const noexcept {
     return first_handshake_seen_;
+}
+
+bool PeerSession::peer_present() const noexcept {
+    return peer_present_;
+}
+
+const std::optional<std::string>& PeerSession::accounting_session_id() const noexcept {
+    return accounting_session_id_;
 }
 
 const std::optional<SessionPolicy>& PeerSession::applied_policy() const noexcept {
     return applied_policy_;
 }
 
-bool PeerSession::on_peer_discovered() {
+bool PeerSession::on_peer_observed() {
+    mark_peer_present();
     if (state_ != SessionState::Discovered) {
         return false;
     }
 
     if (trigger_mode_ == AuthorizationTrigger::OnPeerAppearance) {
-        move_to_pending_auth();
+        move_to_auth_pending();
         return true;
     }
 
     return false;
 }
 
-bool PeerSession::on_first_handshake() {
-    if (state_ == SessionState::Blocked || state_ == SessionState::Terminated) {
+void PeerSession::seed(bool handshake_seen) {
+    mark_peer_present();
+    first_handshake_seen_ = handshake_seen;
+}
+
+bool PeerSession::on_handshake_observed() {
+    mark_peer_present();
+    if (state_ == SessionState::Blocked || state_ == SessionState::BlockingPending) {
         return false;
     }
 
@@ -52,67 +63,91 @@ bool PeerSession::on_first_handshake() {
 
     if (first_event && trigger_mode_ == AuthorizationTrigger::OnFirstHandshake &&
         state_ == SessionState::Discovered) {
-        move_to_pending_auth();
+        move_to_auth_pending();
         return true;
     }
 
     return false;
 }
 
-bool PeerSession::accept(SessionPolicy policy) {
-    if (state_ != SessionState::PendingAuth) {
+bool PeerSession::accept(SessionPolicy policy, std::string accounting_session_id) {
+    if (state_ != SessionState::AuthPending) {
         return false;
     }
 
     applied_policy_ = std::move(policy);
-    state_ = SessionState::Authorized;
-    accounting_state_ = AccountingState::NotStarted;
+    accounting_session_id_ = std::move(accounting_session_id);
+    state_ = SessionState::AccountingStartPending;
     return true;
 }
 
 bool PeerSession::mark_accounting_started() {
-    if (state_ != SessionState::Authorized || accounting_state_ != AccountingState::NotStarted) {
+    if (state_ != SessionState::AccountingStartPending) {
         return false;
     }
 
-    accounting_state_ = AccountingState::Started;
+    state_ = SessionState::Active;
+    return true;
+}
+
+bool PeerSession::begin_accounting_stop() {
+    if (state_ != SessionState::Active) {
+        return false;
+    }
+
+    state_ = SessionState::AccountingStopPending;
     return true;
 }
 
 bool PeerSession::mark_accounting_stopped() {
-    if (accounting_state_ != AccountingState::Started) {
+    if (state_ != SessionState::AccountingStopPending) {
         return false;
     }
 
-    accounting_state_ = AccountingState::Stopped;
     return true;
 }
 
-bool PeerSession::reject(RejectMode mode) {
-    if (state_ != SessionState::PendingAuth) {
+bool PeerSession::begin_block() {
+    if (state_ != SessionState::AuthPending) {
         return false;
     }
 
     applied_policy_.reset();
-    accounting_state_ = AccountingState::NotStarted;
-    state_ = mode == RejectMode::BlockPeer ? SessionState::Blocked : SessionState::Terminated;
+    accounting_session_id_.reset();
+    state_ = SessionState::BlockingPending;
     return true;
 }
 
-bool PeerSession::terminate() {
-    if (state_ == SessionState::Terminated) {
+bool PeerSession::mark_blocked() {
+    if (state_ != SessionState::BlockingPending) {
         return false;
     }
 
-    state_ = SessionState::Terminated;
-    if (accounting_state_ == AccountingState::Started) {
-        accounting_state_ = AccountingState::Stopped;
-    }
+    state_ = SessionState::Blocked;
     return true;
 }
 
-void PeerSession::move_to_pending_auth() {
-    state_ = SessionState::PendingAuth;
+bool PeerSession::begin_removal() {
+    if (state_ != SessionState::AuthPending) {
+        return false;
+    }
+
+    applied_policy_.reset();
+    accounting_session_id_.reset();
+    state_ = SessionState::Discovered;
+    return true;
+}
+
+void PeerSession::observe_peer_removed() {
+    peer_present_ = false;
+}
+
+void PeerSession::move_to_auth_pending() {
+    state_ = SessionState::AuthPending;
+}
+
+void PeerSession::mark_peer_present() {
+    peer_present_ = true;
 }
 
 }  // namespace wg_radius::domain

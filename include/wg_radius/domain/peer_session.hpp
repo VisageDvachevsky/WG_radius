@@ -19,16 +19,12 @@ enum class RejectMode {
 
 enum class SessionState {
     Discovered,
-    PendingAuth,
-    Authorized,
+    AuthPending,
+    AccountingStartPending,
+    Active,
+    AccountingStopPending,
+    BlockingPending,
     Blocked,
-    Terminated,
-};
-
-enum class AccountingState {
-    NotStarted,
-    Started,
-    Stopped,
 };
 
 struct SessionPolicy {
@@ -44,26 +40,33 @@ public:
     [[nodiscard]] const std::string& peer_public_key() const noexcept;
     [[nodiscard]] AuthorizationTrigger trigger_mode() const noexcept;
     [[nodiscard]] SessionState state() const noexcept;
-    [[nodiscard]] AccountingState accounting_state() const noexcept;
     [[nodiscard]] bool first_handshake_seen() const noexcept;
+    [[nodiscard]] bool peer_present() const noexcept;
+    [[nodiscard]] const std::optional<std::string>& accounting_session_id() const noexcept;
     [[nodiscard]] const std::optional<SessionPolicy>& applied_policy() const noexcept;
 
-    [[nodiscard]] bool on_peer_discovered();
-    [[nodiscard]] bool on_first_handshake();
-    [[nodiscard]] bool accept(SessionPolicy policy);
+    [[nodiscard]] bool on_peer_observed();
+    void seed(bool handshake_seen);
+    [[nodiscard]] bool on_handshake_observed();
+    [[nodiscard]] bool accept(SessionPolicy policy, std::string accounting_session_id);
     [[nodiscard]] bool mark_accounting_started();
+    [[nodiscard]] bool begin_accounting_stop();
     [[nodiscard]] bool mark_accounting_stopped();
-    [[nodiscard]] bool reject(RejectMode mode);
-    [[nodiscard]] bool terminate();
+    [[nodiscard]] bool begin_block();
+    [[nodiscard]] bool mark_blocked();
+    [[nodiscard]] bool begin_removal();
+    void observe_peer_removed();
 
 private:
-    void move_to_pending_auth();
+    void move_to_auth_pending();
+    void mark_peer_present();
 
     std::string peer_public_key_;
     AuthorizationTrigger trigger_mode_;
     SessionState state_{SessionState::Discovered};
-    AccountingState accounting_state_{AccountingState::NotStarted};
     bool first_handshake_seen_{false};
+    bool peer_present_{true};
+    std::optional<std::string> accounting_session_id_;
     std::optional<SessionPolicy> applied_policy_;
 };
 

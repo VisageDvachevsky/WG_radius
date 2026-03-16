@@ -14,7 +14,8 @@ The daemon should be split into explicit modules:
 1. `config`
    - parse and validate daemon configuration;
    - load attribute mapping rules;
-   - expose defaults and feature toggles.
+   - expose defaults and feature toggles;
+   - support one or more `WireGuard interface -> RADIUS profile` bindings.
 
 2. `wg-observer`
    - read peer state from WireGuard;
@@ -25,7 +26,8 @@ The daemon should be split into explicit modules:
    - own the peer/session state machine;
    - decide when authorization starts;
    - track authorized, pending, blocked, inactive and terminated sessions;
-   - coordinate accounting, timers and policy application.
+   - coordinate accounting, timers and policy application;
+   - evaluate inactivity using configurable daemon policy rather than assuming a native WireGuard session state.
 
 4. `radius-client`
    - send `Access-Request`;
@@ -98,6 +100,19 @@ This keeps RADIUS behavior explicit and prevents accounting from starting before
    - Egress can usually be controlled on the WG interface.
    - Ingress may require `ifb` mirroring or a deployment-specific compromise.
    - This part needs a concrete Linux traffic-control design before coding the shaping module.
+
+6. Interface/profile operating model
+   - The service should not assume a single global WireGuard interface.
+   - Preferred runtime model: one daemon instance per interface, or one daemon process with multiple interface-scoped profiles.
+   - In both variants, all auth/accounting/CoA settings must be resolved in the context of the interface where a peer is observed.
+
+7. Inactivity policy
+   - WireGuard does not define a canonical inactive session state for this use case.
+   - The daemon must derive inactivity from configurable policy, for example:
+     - handshake timeout;
+     - traffic inactivity timeout;
+     - combined handshake-and-traffic timeout.
+   - `Acct-Stop` due to inactivity must include the derived stop reason, not imply a native WireGuard disconnect event.
 
 ## Recommended Phase Breakdown
 

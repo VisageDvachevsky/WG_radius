@@ -33,6 +33,42 @@ const std::optional<SessionPolicy>& PeerSession::applied_policy() const noexcept
     return applied_policy_;
 }
 
+const std::optional<PeerSession::TimePoint>& PeerSession::last_accounting_update_at() const noexcept {
+    return last_accounting_update_at_;
+}
+
+const std::optional<PeerSession::TimePoint>& PeerSession::last_handshake_activity_at() const noexcept {
+    return last_handshake_activity_at_;
+}
+
+const std::optional<PeerSession::TimePoint>& PeerSession::last_traffic_activity_at() const noexcept {
+    return last_traffic_activity_at_;
+}
+
+const std::optional<PeerSession::TimePoint>& PeerSession::session_started_at() const noexcept {
+    return session_started_at_;
+}
+
+const std::optional<std::string>& PeerSession::endpoint() const noexcept {
+    return endpoint_;
+}
+
+const std::vector<std::string>& PeerSession::allowed_ips() const noexcept {
+    return allowed_ips_;
+}
+
+std::uint64_t PeerSession::transfer_rx_bytes() const noexcept {
+    return transfer_rx_bytes_;
+}
+
+std::uint64_t PeerSession::transfer_tx_bytes() const noexcept {
+    return transfer_tx_bytes_;
+}
+
+const std::optional<AccountingStopReason>& PeerSession::stop_reason() const noexcept {
+    return stop_reason_;
+}
+
 bool PeerSession::on_peer_observed() {
     mark_peer_present();
     if (state_ != SessionState::Discovered) {
@@ -47,9 +83,35 @@ bool PeerSession::on_peer_observed() {
     return false;
 }
 
+void PeerSession::update_authorization_context(
+    std::optional<std::string> endpoint,
+    std::vector<std::string> allowed_ips) {
+    endpoint_ = std::move(endpoint);
+    allowed_ips_ = std::move(allowed_ips);
+}
+
 void PeerSession::seed(bool handshake_seen) {
     mark_peer_present();
     first_handshake_seen_ = handshake_seen;
+}
+
+void PeerSession::record_snapshot_activity(
+    std::uint64_t latest_handshake_epoch_sec,
+    std::uint64_t transfer_rx_bytes,
+    std::uint64_t transfer_tx_bytes,
+    TimePoint now) {
+    mark_peer_present();
+
+    if (latest_handshake_epoch_sec > latest_handshake_epoch_sec_) {
+        latest_handshake_epoch_sec_ = latest_handshake_epoch_sec;
+        last_handshake_activity_at_ = now;
+    }
+
+    if (transfer_rx_bytes != transfer_rx_bytes_ || transfer_tx_bytes != transfer_tx_bytes_) {
+        transfer_rx_bytes_ = transfer_rx_bytes;
+        transfer_tx_bytes_ = transfer_tx_bytes;
+        last_traffic_activity_at_ = now;
+    }
 }
 
 bool PeerSession::on_handshake_observed() {
@@ -81,20 +143,33 @@ bool PeerSession::accept(SessionPolicy policy, std::string accounting_session_id
     return true;
 }
 
-bool PeerSession::mark_accounting_started() {
+bool PeerSession::mark_accounting_started(TimePoint now) {
     if (state_ != SessionState::AccountingStartPending) {
         return false;
     }
 
+    last_accounting_update_at_ = now;
+    session_started_at_ = now;
+    stop_reason_.reset();
     state_ = SessionState::Active;
     return true;
 }
 
-bool PeerSession::begin_accounting_stop() {
+bool PeerSession::mark_interim_accounting(TimePoint now) {
     if (state_ != SessionState::Active) {
         return false;
     }
 
+    last_accounting_update_at_ = now;
+    return true;
+}
+
+bool PeerSession::begin_accounting_stop(AccountingStopReason reason) {
+    if (state_ != SessionState::Active) {
+        return false;
+    }
+
+    stop_reason_ = reason;
     state_ = SessionState::AccountingStopPending;
     return true;
 }
@@ -104,6 +179,9 @@ bool PeerSession::mark_accounting_stopped() {
         return false;
     }
 
+    last_accounting_update_at_.reset();
+    session_started_at_.reset();
+    stop_reason_.reset();
     return true;
 }
 
@@ -114,6 +192,9 @@ bool PeerSession::begin_block() {
 
     applied_policy_.reset();
     accounting_session_id_.reset();
+    last_accounting_update_at_.reset();
+    session_started_at_.reset();
+    stop_reason_.reset();
     state_ = SessionState::BlockingPending;
     return true;
 }
@@ -134,6 +215,9 @@ bool PeerSession::begin_removal() {
 
     applied_policy_.reset();
     accounting_session_id_.reset();
+    last_accounting_update_at_.reset();
+    session_started_at_.reset();
+    stop_reason_.reset();
     state_ = SessionState::Discovered;
     return true;
 }

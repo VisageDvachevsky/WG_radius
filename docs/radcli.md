@@ -1,11 +1,11 @@
 # radcli dependency
 
-`wg_radius` requires `radcli >= 1.4.0`.
+`wg_radius` builds against the system `radcli`, but the real RADIUS integration flow is validated against a newer/forked `radcli` with correct `Message-Authenticator` behavior.
 
 Reason:
-- strict Phase 1 compliance requires `Message-Authenticator` in `Access-Request`;
-- older `radcli` releases such as `1.2.11` do not add it for the current auth path;
-- the real Phase 1 integration test checks this explicitly.
+- strict RADIUS integration compliance requires `Message-Authenticator` in `Access-Request`;
+- older `radcli` releases such as `1.2.11` may not add it for the current auth path;
+- the real integration tests check this explicitly.
 
 Local build against a forked `radcli` install:
 

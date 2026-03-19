@@ -8,7 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBNL REQUIRED IMPORTED_TARGET libnl-3.0 libnl-genl-3.0)
-pkg_check_modules(RADCLI REQUIRED IMPORTED_TARGET radcli>=1.4.0)
+pkg_check_modules(RADCLI REQUIRED IMPORTED_TARGET radcli)
 
 enable_testing()
 
@@ -23,6 +23,7 @@ add_library(
     src/application/auth_command_processor.cpp
     src/application/profile_runtime.cpp
     src/application/command_executor.cpp
+    src/coa/request_source.cpp
     src/radius/radcli_radius_client.cpp
     src/application/wg_polling_coordinator.cpp
     src/application/wg_event_router.cpp
@@ -43,6 +44,7 @@ add_executable(
     tests/test_main.cpp
     tests/async_auth_command_processor_tests.cpp
     tests/auth_command_processor_tests.cpp
+    tests/coa_request_source_tests.cpp
     tests/command_executor_tests.cpp
     tests/config_parser_tests.cpp
     tests/peer_session_tests.cpp
@@ -118,6 +120,20 @@ if(WG_RADIUS_ENABLE_INTEGRATION_TESTS)
         wg_radius_phase1_radius_integration
         PROPERTIES
             LABELS "integration;wireguard;radius;phase1"
+            SKIP_RETURN_CODE 77
+    )
+
+    add_test(
+        NAME wg_radius_phase2_radius_accounting_integration
+        COMMAND
+            ${CMAKE_SOURCE_DIR}/tests/integration/phase2_real_radius_accounting.sh
+            ${CMAKE_BINARY_DIR}/wg_radiusd
+            ${CMAKE_SOURCE_DIR}
+    )
+    set_tests_properties(
+        wg_radius_phase2_radius_accounting_integration
+        PROPERTIES
+            LABELS "integration;wireguard;radius;phase2"
             SKIP_RETURN_CODE 77
     )
 endif()

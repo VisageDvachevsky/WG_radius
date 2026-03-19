@@ -11,6 +11,10 @@ WgPollingCoordinator::WgPollingCoordinator(
       event_router_(event_router) {}
 
 PollResult WgPollingCoordinator::poll() {
+    return poll_at(std::chrono::steady_clock::now());
+}
+
+PollResult WgPollingCoordinator::poll_at(domain::SessionManager::TimePoint now) {
     const auto current_snapshot = wireguard_client_.fetch_interface_snapshot(interface_name_);
     if (!current_snapshot.has_value()) {
         return {.status = PollStatus::SnapshotUnavailable, .commands = {}};
@@ -29,7 +33,7 @@ PollResult WgPollingCoordinator::poll() {
     std::vector<domain::Command> commands;
     const auto events = wireguard::SnapshotDiffer::diff(previous_snapshot_, *current_snapshot);
     for (const auto& event : events) {
-        auto event_commands = event_router_.handle(event);
+        auto event_commands = event_router_.handle(event, now);
         commands.insert(commands.end(), event_commands.begin(), event_commands.end());
     }
 

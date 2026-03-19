@@ -11,7 +11,16 @@ void WgEventRouter::seed(const wireguard::InterfaceSnapshot& snapshot) {
     }
 }
 
-std::vector<domain::Command> WgEventRouter::handle(const wireguard::Event& event) {
+std::vector<domain::Command> WgEventRouter::handle(
+    const wireguard::Event& event,
+    domain::SessionManager::TimePoint now) {
+    session_manager_.record_snapshot_activity(
+        event.peer_public_key,
+        event.latest_handshake_epoch_sec,
+        event.transfer_rx_bytes,
+        event.transfer_tx_bytes,
+        now);
+
     switch (event.type) {
         case wireguard::EventType::PeerObserved:
             return session_manager_.on_peer_observed(

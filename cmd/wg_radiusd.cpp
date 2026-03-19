@@ -4,6 +4,7 @@
 #include "wg_radius/application/profile_runtime.hpp"
 #include "wg_radius/application/wg_event_router.hpp"
 #include "wg_radius/application/wg_polling_coordinator.hpp"
+#include "wg_radius/coa/request_source.hpp"
 #include "wg_radius/config/config_parser.hpp"
 #include "wg_radius/domain/session_manager.hpp"
 #include "wg_radius/radius/radcli_radius_client.hpp"
@@ -29,6 +30,7 @@ int print_usage() {
 
 struct RuntimeContext {
     wg_radius::domain::SessionManager session_manager;
+    wg_radius::coa::UdpRequestSource coa_request_source;
     wg_radius::wireguard::NetlinkWireGuardClient wireguard_client;
     wg_radius::wireguard::NetlinkPeerController peer_controller;
     wg_radius::shaping::NoopTrafficShaper traffic_shaper;
@@ -41,7 +43,15 @@ struct RuntimeContext {
     wg_radius::application::ProfileRuntime runtime;
 
     explicit RuntimeContext(const wg_radius::config::InterfaceProfile& profile)
-        : session_manager(profile.authorization_trigger, profile.reject_mode),
+        : session_manager(
+              profile.authorization_trigger,
+              profile.reject_mode,
+              {
+                  .acct_interim_interval = profile.acct_interim_interval,
+                  .inactive_timeout = profile.inactive_timeout,
+                  .inactivity_strategy = profile.inactivity_strategy,
+              }),
+          coa_request_source(profile.coa_server, profile.radius_profile.shared_secret),
           wireguard_client(),
           peer_controller(),
           traffic_shaper(),
@@ -51,7 +61,12 @@ struct RuntimeContext {
           auth_processor(profile.interface_name, profile.radius_profile, session_manager, radius_client),
           async_auth_processor(auth_processor),
           command_executor(profile.interface_name, radius_client, peer_controller, traffic_shaper),
-          runtime(polling_coordinator, async_auth_processor, session_manager, command_executor) {}
+          runtime(
+              polling_coordinator,
+              async_auth_processor,
+              session_manager,
+              command_executor,
+              &coa_request_source) {}
 };
 
 }  // namespace

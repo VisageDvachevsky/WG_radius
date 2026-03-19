@@ -12,7 +12,9 @@ public:
     explicit WgEventRouter(domain::SessionManager& session_manager);
 
     void seed(const wireguard::InterfaceSnapshot& snapshot);
-    [[nodiscard]] std::vector<domain::Command> handle(const wireguard::Event& event);
+    [[nodiscard]] std::vector<domain::Command> handle(
+        const wireguard::Event& event,
+        domain::SessionManager::TimePoint now = domain::SessionManager::TimePoint{});
 
 private:
     domain::SessionManager& session_manager_;

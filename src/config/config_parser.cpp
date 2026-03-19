@@ -57,6 +57,19 @@ std::optional<domain::RejectMode> parse_reject_mode(const std::string& value) {
     return std::nullopt;
 }
 
+std::optional<InactivityStrategy> parse_inactivity_strategy(const std::string& value) {
+    if (value == "handshake-only") {
+        return InactivityStrategy::HandshakeOnly;
+    }
+    if (value == "traffic-only") {
+        return InactivityStrategy::TrafficOnly;
+    }
+    if (value == "handshake-and-traffic") {
+        return InactivityStrategy::HandshakeAndTraffic;
+    }
+    return std::nullopt;
+}
+
 }  // namespace
 
 std::optional<DaemonConfig> ConfigParser::parse(const std::string& text) {
@@ -65,6 +78,8 @@ std::optional<DaemonConfig> ConfigParser::parse(const std::string& text) {
     std::optional<InterfaceProfile> current_profile;
     DaemonConfig config;
     std::unordered_map<std::string, bool> names_seen;
+    std::optional<std::string> pending_coa_host;
+    std::optional<std::uint16_t> pending_coa_port;
 
     while (std::getline(input, line)) {
         line = trim(line);
@@ -77,6 +92,13 @@ std::optional<DaemonConfig> ConfigParser::parse(const std::string& text) {
                 return std::nullopt;
             }
             if (current_profile.has_value()) {
+                if (pending_coa_host.has_value() != pending_coa_port.has_value()) {
+                    return std::nullopt;
+                }
+                if (pending_coa_host.has_value()) {
+                    current_profile->coa_server =
+                        radius::RadiusEndpoint{.host = *pending_coa_host, .port = *pending_coa_port};
+                }
                 if (current_profile->name.empty() || current_profile->interface_name.empty() ||
                     current_profile->radius_profile.auth_server.host.empty() ||
                     current_profile->radius_profile.accounting_server.host.empty() ||
@@ -104,10 +126,16 @@ std::optional<DaemonConfig> ConfigParser::parse(const std::string& text) {
                         .nas_identifier = {},
                         .nas_ip_address = std::nullopt,
                     },
+                .coa_server = std::nullopt,
                 .poll_interval_ms = 1000,
+                .acct_interim_interval = std::nullopt,
+                .inactive_timeout = std::nullopt,
+                .inactivity_strategy = InactivityStrategy::HandshakeOnly,
                 .authorization_trigger = domain::AuthorizationTrigger::OnPeerAppearance,
                 .reject_mode = domain::RejectMode::RemovePeer,
             };
+            pending_coa_host.reset();
+            pending_coa_port.reset();
             continue;
         }
 
@@ -140,6 +168,14 @@ std::optional<DaemonConfig> ConfigParser::parse(const std::string& text) {
                 return std::nullopt;
             }
             current_profile->radius_profile.accounting_server.port = *parsed;
+        } else if (key == "coa_host") {
+            pending_coa_host = value;
+        } else if (key == "coa_port") {
+            const auto parsed = parse_u16(value);
+            if (!parsed.has_value()) {
+                return std::nullopt;
+            }
+            pending_coa_port = *parsed;
         } else if (key == "secret") {
             current_profile->radius_profile.shared_secret = value;
         } else if (key == "nas_identifier") {
@@ -164,6 +200,24 @@ std::optional<DaemonConfig> ConfigParser::parse(const std::string& text) {
                 return std::nullopt;
             }
             current_profile->poll_interval_ms = *parsed;
+        } else if (key == "acct_interim_interval") {
+            const auto parsed = parse_int(value);
+            if (!parsed.has_value() || *parsed <= 0) {
+                return std::nullopt;
+            }
+            current_profile->acct_interim_interval = std::chrono::seconds{*parsed};
+        } else if (key == "inactive_timeout") {
+            const auto parsed = parse_int(value);
+            if (!parsed.has_value() || *parsed <= 0) {
+                return std::nullopt;
+            }
+            current_profile->inactive_timeout = std::chrono::seconds{*parsed};
+        } else if (key == "inactivity_strategy") {
+            const auto parsed = parse_inactivity_strategy(value);
+            if (!parsed.has_value()) {
+                return std::nullopt;
+            }
+            current_profile->inactivity_strategy = *parsed;
         } else if (key == "authorization_trigger") {
             const auto parsed = parse_trigger(value);
             if (!parsed.has_value()) {
@@ -182,6 +236,13 @@ std::optional<DaemonConfig> ConfigParser::parse(const std::string& text) {
     }
 
     if (current_profile.has_value()) {
+        if (pending_coa_host.has_value() != pending_coa_port.has_value()) {
+            return std::nullopt;
+        }
+        if (pending_coa_host.has_value()) {
+            current_profile->coa_server =
+                radius::RadiusEndpoint{.host = *pending_coa_host, .port = *pending_coa_port};
+        }
         if (current_profile->name.empty() || current_profile->interface_name.empty() ||
             current_profile->radius_profile.auth_server.host.empty() ||
             current_profile->radius_profile.accounting_server.host.empty() ||

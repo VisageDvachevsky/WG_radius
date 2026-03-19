@@ -2,6 +2,7 @@
 
 #include "test_harness.hpp"
 
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -154,6 +155,16 @@ TEST_CASE(command_executor_must_execute_start_accounting_instead_of_ignoring_it)
         .peer_public_key = "peer-a",
         .accounting_session_id = std::string{"acct-1"},
         .policy = domain::SessionPolicy{},
+        .authorization_context = std::nullopt,
+        .accounting_context =
+            domain::AccountingContext{
+                .endpoint = std::string{"198.51.100.10:12345"},
+                .allowed_ips = {"10.0.0.2/32"},
+                .session_started_at = std::chrono::steady_clock::now() - std::chrono::seconds{5},
+                .transfer_rx_bytes = 100,
+                .transfer_tx_bytes = 200,
+                .stop_reason = std::nullopt,
+            },
     });
 
     EXPECT_EQ(result.status, application::CommandExecutionStatus::Executed);
@@ -163,6 +174,11 @@ TEST_CASE(command_executor_must_execute_start_accounting_instead_of_ignoring_it)
     EXPECT_EQ(radius_client.last_request->interface_name, "wg0");
     EXPECT_EQ(radius_client.last_request->peer_public_key, "peer-a");
     EXPECT_EQ(radius_client.last_request->accounting_session_id, "acct-1");
+    EXPECT_EQ(radius_client.last_request->endpoint, std::optional<std::string>{"198.51.100.10:12345"});
+    EXPECT_EQ(radius_client.last_request->framed_ip_address, std::optional<std::string>{"10.0.0.2"});
+    EXPECT_EQ(radius_client.last_request->transfer_rx_bytes, 100U);
+    EXPECT_EQ(radius_client.last_request->transfer_tx_bytes, 200U);
+    EXPECT_TRUE(radius_client.last_request->session_duration.has_value());
 }
 
 TEST_CASE(command_executor_must_execute_stop_accounting_instead_of_ignoring_it) {
@@ -176,12 +192,23 @@ TEST_CASE(command_executor_must_execute_stop_accounting_instead_of_ignoring_it) 
         .peer_public_key = "peer-a",
         .accounting_session_id = std::string{"acct-1"},
         .policy = std::nullopt,
+        .authorization_context = std::nullopt,
+        .accounting_context =
+            domain::AccountingContext{
+                .endpoint = std::nullopt,
+                .allowed_ips = {"10.0.0.2/32"},
+                .session_started_at = std::chrono::steady_clock::now() - std::chrono::seconds{9},
+                .transfer_rx_bytes = 300,
+                .transfer_tx_bytes = 400,
+                .stop_reason = domain::AccountingStopReason::PeerRemoved,
+            },
     });
 
     EXPECT_EQ(result.status, application::CommandExecutionStatus::Executed);
     EXPECT_EQ(radius_client.account_calls, 1);
     EXPECT_TRUE(radius_client.last_request.has_value());
     EXPECT_EQ(radius_client.last_request->event_type, radius::AccountingEventType::Stop);
+    EXPECT_EQ(radius_client.last_request->stop_reason, std::optional{domain::AccountingStopReason::PeerRemoved});
 }
 
 TEST_CASE(command_executor_must_execute_block_peer_instead_of_ignoring_it) {

@@ -98,6 +98,46 @@ TEST_CASE(config_parser_rejects_unknown_keys) {
     EXPECT_FALSE(config.has_value());
 }
 
+TEST_CASE(config_parser_accepts_accounting_runtime_fields_required_for_phase2) {
+    const auto config = ConfigParser::parse(
+        "[profile wg-main]\n"
+        "interface = wg0\n"
+        "auth_host = 127.0.0.1\n"
+        "auth_port = 1812\n"
+        "acct_host = 127.0.0.1\n"
+        "acct_port = 1813\n"
+        "secret = topsecret\n"
+        "acct_interim_interval = 60\n"
+        "inactive_timeout = 300\n"
+        "inactivity_strategy = handshake-and-traffic\n");
+
+    EXPECT_TRUE(config.has_value());
+    EXPECT_EQ(config->profiles.size(), 1U);
+    EXPECT_EQ(config->profiles.front().acct_interim_interval, std::chrono::seconds{60});
+    EXPECT_EQ(config->profiles.front().inactive_timeout, std::chrono::seconds{300});
+    EXPECT_EQ(
+        config->profiles.front().inactivity_strategy,
+        wg_radius::config::InactivityStrategy::HandshakeAndTraffic);
+}
+
+TEST_CASE(config_parser_accepts_optional_coa_endpoint_fields) {
+    const auto config = ConfigParser::parse(
+        "[profile wg-main]\n"
+        "interface = wg0\n"
+        "auth_host = 127.0.0.1\n"
+        "auth_port = 1812\n"
+        "acct_host = 127.0.0.1\n"
+        "acct_port = 1813\n"
+        "coa_host = 127.0.0.1\n"
+        "coa_port = 3799\n"
+        "secret = topsecret\n");
+
+    EXPECT_TRUE(config.has_value());
+    EXPECT_TRUE(config->profiles.front().coa_server.has_value());
+    EXPECT_EQ(config->profiles.front().coa_server->host, "127.0.0.1");
+    EXPECT_EQ(config->profiles.front().coa_server->port, 3799);
+}
+
 // TODO(stage-1+/deliverables): re-enable after config grows the remaining spec
 // fields and packaging/docs artifacts are added.
 #if 0

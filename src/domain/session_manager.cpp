@@ -1,21 +1,56 @@
 #include "wg_radius/domain/session_manager.hpp"
 
+#include <algorithm>
 #include <utility>
 
 namespace wg_radius::domain {
 
+namespace {
+
+bool inactivity_elapsed(
+    const std::optional<PeerSession::TimePoint>& activity_at,
+    SessionManager::TimePoint now,
+    std::chrono::seconds timeout) {
+    return activity_at.has_value() && now - *activity_at >= timeout;
+}
+
+}  // namespace
+
 SessionManager::SessionManager(AuthorizationTrigger trigger_mode, RejectMode reject_mode)
-    : trigger_mode_(trigger_mode), reject_mode_(reject_mode) {}
+    : SessionManager(trigger_mode, reject_mode, AccountingPolicy{}) {}
+
+SessionManager::SessionManager(
+    AuthorizationTrigger trigger_mode,
+    RejectMode reject_mode,
+    AccountingPolicy accounting_policy)
+    : trigger_mode_(trigger_mode),
+      reject_mode_(reject_mode),
+      accounting_policy_(std::move(accounting_policy)) {}
 
 void SessionManager::on_peer_seeded(const std::string& peer_public_key, bool handshake_seen) {
     auto& session = get_or_create_session(peer_public_key);
     session.seed(handshake_seen);
 }
 
+void SessionManager::record_snapshot_activity(
+    const std::string& peer_public_key,
+    std::uint64_t latest_handshake_epoch_sec,
+    std::uint64_t transfer_rx_bytes,
+    std::uint64_t transfer_tx_bytes,
+    TimePoint now) {
+    auto& session = get_or_create_session(peer_public_key);
+    session.record_snapshot_activity(
+        latest_handshake_epoch_sec,
+        transfer_rx_bytes,
+        transfer_tx_bytes,
+        now);
+}
+
 std::vector<Command> SessionManager::on_peer_observed(
     const std::string& peer_public_key,
     AuthorizationContext context) {
     auto& session = get_or_create_session(peer_public_key);
+    session.update_authorization_context(context.endpoint, context.allowed_ips);
     if (!session.on_peer_observed()) {
         return {};
     }
@@ -34,6 +69,7 @@ std::vector<Command> SessionManager::on_handshake_observed(
     if (it == sessions_.end()) {
         return {};
     }
+    it->second.update_authorization_context(context.endpoint, context.allowed_ips);
 
     if (!it->second.on_handshake_observed()) {
         return {};
@@ -71,7 +107,8 @@ std::vector<Command> SessionManager::on_access_accept(
          .peer_public_key = peer_public_key,
          .accounting_session_id = accounting_session_id,
          .policy = std::move(policy),
-         .authorization_context = std::nullopt});
+         .authorization_context = std::nullopt,
+         .accounting_context = make_accounting_context(it->second)});
     return commands;
 }
 
@@ -89,7 +126,8 @@ std::vector<Command> SessionManager::on_access_reject(const std::string& peer_pu
                  .peer_public_key = peer_public_key,
                  .accounting_session_id = std::nullopt,
                  .policy = std::nullopt,
-                 .authorization_context = std::nullopt}};
+                 .authorization_context = std::nullopt,
+                 .accounting_context = std::nullopt}};
     }
 
     if (!it->second.begin_removal()) {
@@ -99,16 +137,33 @@ std::vector<Command> SessionManager::on_access_reject(const std::string& peer_pu
              .peer_public_key = peer_public_key,
              .accounting_session_id = std::nullopt,
              .policy = std::nullopt,
-             .authorization_context = std::nullopt}};
+             .authorization_context = std::nullopt,
+             .accounting_context = std::nullopt}};
 }
 
-std::vector<Command> SessionManager::on_accounting_started(const std::string& peer_public_key) {
+std::vector<Command> SessionManager::on_disconnect_request(const std::string& peer_public_key) {
+    auto it = sessions_.find(peer_public_key);
+    if (it == sessions_.end() || !it->second.peer_present()) {
+        return {};
+    }
+
+    return {{.type = CommandType::RemovePeer,
+             .peer_public_key = peer_public_key,
+             .accounting_session_id = std::nullopt,
+             .policy = std::nullopt,
+             .authorization_context = std::nullopt,
+             .accounting_context = std::nullopt}};
+}
+
+std::vector<Command> SessionManager::on_accounting_started(
+    const std::string& peer_public_key,
+    TimePoint now) {
     auto it = sessions_.find(peer_public_key);
     if (it == sessions_.end()) {
         return {};
     }
 
-    if (!it->second.mark_accounting_started()) {
+    if (!it->second.mark_accounting_started(now)) {
         return {};
     }
 
@@ -151,14 +206,15 @@ std::vector<Command> SessionManager::on_peer_removed(const std::string& peer_pub
     it->second.observe_peer_removed();
 
     if (it->second.state() == SessionState::Active) {
-        if (!it->second.begin_accounting_stop()) {
+        if (!it->second.begin_accounting_stop(AccountingStopReason::PeerRemoved)) {
             return {};
         }
         return {{.type = CommandType::StopAccounting,
                  .peer_public_key = peer_public_key,
                  .accounting_session_id = it->second.accounting_session_id(),
                  .policy = std::nullopt,
-                 .authorization_context = std::nullopt}};
+                 .authorization_context = std::nullopt,
+                 .accounting_context = make_accounting_context(it->second)}};
     }
 
     if (it->second.state() == SessionState::AccountingStopPending) {
@@ -167,6 +223,90 @@ std::vector<Command> SessionManager::on_peer_removed(const std::string& peer_pub
 
     sessions_.erase(it);
     return {};
+}
+
+std::vector<Command> SessionManager::on_timer(TimePoint now) {
+    std::vector<Command> commands;
+
+    for (auto& [peer_public_key, session] : sessions_) {
+        if (session.state() != SessionState::Active || !session.accounting_session_id().has_value()) {
+            continue;
+        }
+
+        if (accounting_policy_.inactive_timeout.has_value()) {
+            const auto timeout = *accounting_policy_.inactive_timeout;
+            const bool handshake_inactive =
+                inactivity_elapsed(session.last_handshake_activity_at(), now, timeout);
+            const bool traffic_inactive =
+                inactivity_elapsed(session.last_traffic_activity_at(), now, timeout);
+
+            bool should_stop = false;
+            switch (accounting_policy_.inactivity_strategy) {
+                case config::InactivityStrategy::HandshakeOnly:
+                    should_stop = handshake_inactive;
+                    break;
+                case config::InactivityStrategy::TrafficOnly:
+                    should_stop = traffic_inactive;
+                    break;
+                case config::InactivityStrategy::HandshakeAndTraffic:
+                    should_stop = handshake_inactive && traffic_inactive;
+                    break;
+            }
+
+            auto stop_reason = AccountingStopReason::InactivityHandshake;
+            switch (accounting_policy_.inactivity_strategy) {
+                case config::InactivityStrategy::HandshakeOnly:
+                    stop_reason = AccountingStopReason::InactivityHandshake;
+                    break;
+                case config::InactivityStrategy::TrafficOnly:
+                    stop_reason = AccountingStopReason::InactivityTraffic;
+                    break;
+                case config::InactivityStrategy::HandshakeAndTraffic:
+                    stop_reason = AccountingStopReason::InactivityHandshakeAndTraffic;
+                    break;
+            }
+
+            if (should_stop && session.begin_accounting_stop(stop_reason)) {
+                commands.push_back(
+                    {.type = CommandType::StopAccounting,
+                     .peer_public_key = peer_public_key,
+                     .accounting_session_id = session.accounting_session_id(),
+                     .policy = std::nullopt,
+                     .authorization_context = std::nullopt,
+                     .accounting_context = make_accounting_context(session)});
+                continue;
+            }
+        }
+
+        if (!accounting_policy_.acct_interim_interval.has_value() ||
+            !session.last_accounting_update_at().has_value()) {
+            continue;
+        }
+
+        if (now - *session.last_accounting_update_at() >= *accounting_policy_.acct_interim_interval &&
+            session.mark_interim_accounting(now)) {
+            commands.push_back(
+                {.type = CommandType::InterimAccounting,
+                 .peer_public_key = peer_public_key,
+                 .accounting_session_id = session.accounting_session_id(),
+                 .policy = std::nullopt,
+                 .authorization_context = std::nullopt,
+                 .accounting_context = make_accounting_context(session)});
+        }
+    }
+
+    return commands;
+}
+
+std::optional<AccountingContext> SessionManager::make_accounting_context(const PeerSession& session) const {
+    return AccountingContext{
+        .endpoint = session.endpoint(),
+        .allowed_ips = session.allowed_ips(),
+        .session_started_at = session.session_started_at(),
+        .transfer_rx_bytes = session.transfer_rx_bytes(),
+        .transfer_tx_bytes = session.transfer_tx_bytes(),
+        .stop_reason = session.stop_reason(),
+    };
 }
 
 const PeerSession* SessionManager::find_session(const std::string& peer_public_key) const {

@@ -3,6 +3,7 @@
 #include "wg_radius/application/wg_event_router.hpp"
 #include "wg_radius/wireguard/wireguard_client.hpp"
 
+#include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
@@ -30,6 +31,7 @@ public:
         WgEventRouter& event_router);
 
     [[nodiscard]] PollResult poll();
+    [[nodiscard]] PollResult poll_at(domain::SessionManager::TimePoint now);
 
 private:
     std::string interface_name_;

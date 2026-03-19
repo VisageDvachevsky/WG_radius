@@ -2,6 +2,7 @@
 
 #include "test_harness.hpp"
 
+#include <chrono>
 #include <queue>
 
 using namespace wg_radius;
@@ -78,6 +79,20 @@ public:
         auto snapshot = snapshots.front();
         snapshots.pop();
         return snapshot;
+    }
+};
+
+class FakeCoaRequestSource final : public coa::RequestSource {
+public:
+    std::queue<coa::Request> requests;
+
+    std::optional<coa::Request> try_pop_request() override {
+        if (requests.empty()) {
+            return std::nullopt;
+        }
+        auto value = requests.front();
+        requests.pop();
+        return value;
     }
 };
 
@@ -281,4 +296,80 @@ TEST_CASE(profile_runtime_must_surface_accounting_stop_execution_after_peer_remo
     EXPECT_EQ(radius_client.accounting_requests.size(), 1U);
     EXPECT_EQ(radius_client.accounting_requests.front().event_type, radius::AccountingEventType::Stop);
     EXPECT_TRUE(manager.find_session("peer-a") == nullptr);
+}
+
+TEST_CASE(profile_runtime_executes_interim_accounting_tick_for_active_session) {
+    using namespace std::chrono_literals;
+
+    FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnPeerAppearance,
+        domain::RejectMode::RemovePeer,
+        {.acct_interim_interval = 30s, .inactive_timeout = std::nullopt}};
+    application::WgEventRouter router{manager};
+    application::WgPollingCoordinator coordinator{"wg0", wg_client, router};
+    FakeAuthQueue auth_queue;
+    FakePeerController peer_controller;
+    FakeTrafficShaper traffic_shaper;
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{coordinator, auth_queue, manager, executor};
+
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
+    manager.record_snapshot_activity("peer-a", 0, 0, 0, std::chrono::steady_clock::time_point{});
+    EXPECT_EQ(manager.on_access_accept("peer-a", domain::SessionPolicy{}).size(), 2U);
+    EXPECT_TRUE(manager.on_accounting_started("peer-a", std::chrono::steady_clock::time_point{}).empty());
+
+    wg_client.snapshots.push(make_snapshot("wg0", {}));
+    EXPECT_EQ(runtime.step_at(std::chrono::steady_clock::time_point{} + 31s).executed_commands.size(), 1U);
+    EXPECT_EQ(radius_client.accounting_requests.size(), 1U);
+    EXPECT_EQ(radius_client.accounting_requests.front().event_type, radius::AccountingEventType::InterimUpdate);
+}
+
+TEST_CASE(profile_runtime_processes_disconnect_request_into_remove_and_stop_accounting) {
+    FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnPeerAppearance,
+        domain::RejectMode::RemovePeer};
+    application::WgEventRouter router{manager};
+    application::WgPollingCoordinator coordinator{"wg0", wg_client, router};
+    FakeAuthQueue auth_queue;
+    FakePeerController peer_controller;
+    FakeTrafficShaper traffic_shaper;
+    FakeCoaRequestSource coa_source;
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{
+        coordinator,
+        auth_queue,
+        manager,
+        executor,
+        &coa_source};
+
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
+    EXPECT_EQ(manager.on_access_accept("peer-a", domain::SessionPolicy{}).size(), 2U);
+    EXPECT_TRUE(manager.on_accounting_started("peer-a").empty());
+
+    coa_source.requests.push(
+        {.type = coa::RequestType::Disconnect, .peer_public_key = "peer-a"});
+    wg_client.snapshots.push(make_snapshot("wg0", {}));
+
+    const auto result = runtime.step();
+
+    EXPECT_EQ(result.executed_commands.size(), 2U);
+    EXPECT_EQ(result.executed_commands.front().command.type, domain::CommandType::RemovePeer);
+    EXPECT_EQ(result.executed_commands.back().command.type, domain::CommandType::StopAccounting);
+    EXPECT_EQ(peer_controller.remove_calls, 1);
+    EXPECT_EQ(radius_client.accounting_requests.size(), 1U);
+    EXPECT_EQ(radius_client.accounting_requests.front().event_type, radius::AccountingEventType::Stop);
 }

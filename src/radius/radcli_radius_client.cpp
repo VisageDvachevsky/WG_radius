@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <arpa/inet.h>
 #include <iostream>
+#include <limits>
 #include <optional>
 #include <set>
 #include <string>
@@ -32,7 +33,11 @@ constexpr char kDictionary[] =
     "ATTRIBUTE Proxy-State 33 string\n"
     "ATTRIBUTE Acct-Status-Type 40 integer\n"
     "ATTRIBUTE Acct-Delay-Time 41 integer\n"
+    "ATTRIBUTE Acct-Input-Octets 42 integer\n"
+    "ATTRIBUTE Acct-Output-Octets 43 integer\n"
     "ATTRIBUTE Acct-Session-Id 44 string\n"
+    "ATTRIBUTE Acct-Session-Time 46 integer\n"
+    "ATTRIBUTE Acct-Terminate-Cause 49 integer\n"
     "ATTRIBUTE Acct-Interim-Interval 85 integer\n"
     "ATTRIBUTE Idle-Timeout 28 integer\n"
     "ATTRIBUTE Message-Authenticator 80 string\n"
@@ -90,6 +95,23 @@ AuthorizationResponse map_response(int result, VALUE_PAIR* received) {
         default:
             return {.decision = AuthorizationDecision::Error, .policy = std::nullopt};
     }
+}
+
+const char* stop_reason_string(domain::AccountingStopReason reason) {
+    switch (reason) {
+        case domain::AccountingStopReason::PeerRemoved:
+            return "peer-removed";
+        case domain::AccountingStopReason::InactivityHandshake:
+            return "inactive-handshake";
+        case domain::AccountingStopReason::InactivityTraffic:
+            return "inactive-traffic";
+        case domain::AccountingStopReason::InactivityHandshakeAndTraffic:
+            return "inactive-handshake-and-traffic";
+        case domain::AccountingStopReason::DisconnectRequest:
+            return "disconnect-request";
+    }
+
+    return "unknown";
 }
 
 }  // namespace
@@ -265,7 +287,11 @@ bool RadcliRadiusClient::account(const AccountingRequest& request) {
     };
 
     const std::uint32_t status_type =
-        request.event_type == AccountingEventType::Start ? PW_STATUS_START : PW_STATUS_STOP;
+        request.event_type == AccountingEventType::Start
+        ? PW_STATUS_START
+        : request.event_type == AccountingEventType::InterimUpdate
+        ? PW_STATUS_ALIVE
+        : PW_STATUS_STOP;
 
     if (rc_avpair_add(handle_.get(), &send, PW_USER_NAME, request.peer_public_key.c_str(), -1, 0) ==
             nullptr ||
@@ -277,6 +303,54 @@ bool RadcliRadiusClient::account(const AccountingRequest& request) {
             nullptr ||
         rc_avpair_add(handle_.get(), &send, PW_ACCT_STATUS_TYPE, &status_type, sizeof(status_type), 0) ==
             nullptr) {
+        cleanup();
+        return false;
+    }
+
+    if (request.endpoint.has_value() &&
+        rc_avpair_add(handle_.get(), &send, PW_REPLY_MESSAGE, request.endpoint->c_str(), -1, 0) == nullptr) {
+        cleanup();
+        return false;
+    }
+
+    if (request.framed_ip_address.has_value()) {
+        const auto framed_ip_value = parse_ipv4_host_order(*request.framed_ip_address);
+        if (framed_ip_value.has_value() &&
+            rc_avpair_add(handle_.get(), &send, PW_FRAMED_IP_ADDRESS, &*framed_ip_value, 0, 0) == nullptr) {
+            cleanup();
+            return false;
+        }
+    }
+
+    const auto rx_octets = static_cast<std::uint32_t>(
+        std::min<std::uint64_t>(request.transfer_rx_bytes, std::numeric_limits<std::uint32_t>::max()));
+    const auto tx_octets = static_cast<std::uint32_t>(
+        std::min<std::uint64_t>(request.transfer_tx_bytes, std::numeric_limits<std::uint32_t>::max()));
+    if (rc_avpair_add(handle_.get(), &send, PW_ACCT_INPUT_OCTETS, &rx_octets, sizeof(rx_octets), 0) == nullptr ||
+        rc_avpair_add(handle_.get(), &send, PW_ACCT_OUTPUT_OCTETS, &tx_octets, sizeof(tx_octets), 0) == nullptr) {
+        cleanup();
+        return false;
+    }
+
+    if (request.session_duration.has_value()) {
+        const auto session_time = static_cast<std::uint32_t>(std::max<std::int64_t>(
+            0,
+            request.session_duration->count()));
+        if (rc_avpair_add(handle_.get(), &send, PW_ACCT_SESSION_TIME, &session_time, sizeof(session_time), 0) ==
+            nullptr) {
+            cleanup();
+            return false;
+        }
+    }
+
+    if (request.stop_reason.has_value() &&
+        rc_avpair_add(
+            handle_.get(),
+            &send,
+            PW_REPLY_MESSAGE,
+            stop_reason_string(*request.stop_reason),
+            -1,
+            0) == nullptr) {
         cleanup();
         return false;
     }

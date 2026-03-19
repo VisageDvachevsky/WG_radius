@@ -126,6 +126,9 @@ std::vector<Event> SnapshotDiffer::diff(
                 .peer_public_key = public_key,
                 .endpoint = current_peer.endpoint,
                 .allowed_ips = current_peer.allowed_ips,
+                .latest_handshake_epoch_sec = current_peer.latest_handshake_epoch_sec,
+                .transfer_rx_bytes = current_peer.transfer_rx_bytes,
+                .transfer_tx_bytes = current_peer.transfer_tx_bytes,
             });
             if (current_peer.latest_handshake_epoch_sec > 0) {
                 events.push_back(Event{
@@ -133,6 +136,9 @@ std::vector<Event> SnapshotDiffer::diff(
                     .peer_public_key = public_key,
                     .endpoint = current_peer.endpoint,
                     .allowed_ips = current_peer.allowed_ips,
+                    .latest_handshake_epoch_sec = current_peer.latest_handshake_epoch_sec,
+                    .transfer_rx_bytes = current_peer.transfer_rx_bytes,
+                    .transfer_tx_bytes = current_peer.transfer_tx_bytes,
                 });
             }
             continue;
@@ -146,6 +152,9 @@ std::vector<Event> SnapshotDiffer::diff(
                 .peer_public_key = public_key,
                 .endpoint = current_peer.endpoint,
                 .allowed_ips = current_peer.allowed_ips,
+                .latest_handshake_epoch_sec = current_peer.latest_handshake_epoch_sec,
+                .transfer_rx_bytes = current_peer.transfer_rx_bytes,
+                .transfer_tx_bytes = current_peer.transfer_tx_bytes,
             });
         } else if (
             current_peer.latest_handshake_epoch_sec > previous_peer.latest_handshake_epoch_sec) {
@@ -154,6 +163,9 @@ std::vector<Event> SnapshotDiffer::diff(
                 .peer_public_key = public_key,
                 .endpoint = current_peer.endpoint,
                 .allowed_ips = current_peer.allowed_ips,
+                .latest_handshake_epoch_sec = current_peer.latest_handshake_epoch_sec,
+                .transfer_rx_bytes = current_peer.transfer_rx_bytes,
+                .transfer_tx_bytes = current_peer.transfer_tx_bytes,
             });
         }
 
@@ -164,6 +176,9 @@ std::vector<Event> SnapshotDiffer::diff(
                 .peer_public_key = public_key,
                 .endpoint = current_peer.endpoint,
                 .allowed_ips = current_peer.allowed_ips,
+                .latest_handshake_epoch_sec = current_peer.latest_handshake_epoch_sec,
+                .transfer_rx_bytes = current_peer.transfer_rx_bytes,
+                .transfer_tx_bytes = current_peer.transfer_tx_bytes,
             });
         }
     }

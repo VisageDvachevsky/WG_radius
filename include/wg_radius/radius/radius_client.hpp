@@ -21,6 +21,7 @@ struct AuthorizationRequest {
 
 enum class AccountingEventType {
     Start,
+    InterimUpdate,
     Stop,
 };
 
@@ -29,6 +30,12 @@ struct AccountingRequest {
     std::string interface_name;
     std::string peer_public_key;
     std::string accounting_session_id;
+    std::optional<std::string> endpoint;
+    std::optional<std::string> framed_ip_address;
+    std::optional<std::chrono::seconds> session_duration;
+    std::uint64_t transfer_rx_bytes{0};
+    std::uint64_t transfer_tx_bytes{0};
+    std::optional<domain::AccountingStopReason> stop_reason;
 };
 
 enum class AuthorizationDecision {

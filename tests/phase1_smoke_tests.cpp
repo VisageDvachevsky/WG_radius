@@ -158,6 +158,11 @@ TEST_CASE(phase1_smoke_accept_path_authorizes_applies_policy_and_starts_accounti
     EXPECT_EQ(radius_client.auth_requests.size(), 1U);
     EXPECT_EQ(radius_client.accounting_requests.size(), 1U);
     EXPECT_EQ(radius_client.accounting_requests.front().event_type, radius::AccountingEventType::Start);
+    EXPECT_EQ(
+        radius_client.accounting_requests.front().framed_ip_address,
+        std::optional<std::string>{"10.0.0.2"});
+    EXPECT_EQ(radius_client.accounting_requests.front().transfer_rx_bytes, 100U);
+    EXPECT_EQ(radius_client.accounting_requests.front().transfer_tx_bytes, 200U);
     EXPECT_EQ(traffic_shaper.shaped_peers.size(), 1U);
     EXPECT_EQ(traffic_shaper.shaped_peers.front(), "peer-a");
     EXPECT_TRUE(manager.find_session("peer-a") != nullptr);
@@ -272,5 +277,102 @@ TEST_CASE(phase1_smoke_active_peer_removal_sends_accounting_stop) {
     EXPECT_EQ(removal_result.poll_status, application::PollStatus::CommandsProduced);
     EXPECT_EQ(radius_client.accounting_requests.size(), 2U);
     EXPECT_EQ(radius_client.accounting_requests.back().event_type, radius::AccountingEventType::Stop);
+    EXPECT_EQ(
+        radius_client.accounting_requests.back().stop_reason,
+        std::optional{domain::AccountingStopReason::PeerRemoved});
     EXPECT_TRUE(manager.find_session("peer-c") == nullptr);
+}
+
+TEST_CASE(phase2_smoke_active_peer_emits_interim_then_stops_on_inactivity) {
+    using namespace std::chrono_literals;
+
+    FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
+    FakePeerController peer_controller;
+    FakeTrafficShaper traffic_shaper;
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnPeerAppearance,
+        domain::RejectMode::RemovePeer,
+        {
+            .acct_interim_interval = 30s,
+            .inactive_timeout = 60s,
+            .inactivity_strategy = wg_radius::config::InactivityStrategy::HandshakeAndTraffic,
+        }};
+    application::WgEventRouter router{manager};
+    application::WgPollingCoordinator coordinator{"wg0", wg_client, router};
+    application::AuthCommandProcessor auth_processor{"wg0", kRadiusProfile, manager, radius_client};
+    application::AsyncAuthCommandProcessor async_processor{auth_processor};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{coordinator, async_processor, manager, executor};
+
+    wg_client.snapshots.push(make_snapshot("wg0", {}));
+    EXPECT_EQ(
+        runtime.step_at(std::chrono::steady_clock::time_point{}).poll_status,
+        application::PollStatus::Seeded);
+
+    wg_client.snapshots.push(make_snapshot(
+        "wg0",
+        {{
+            .public_key = "peer-z",
+            .endpoint = std::string{"198.51.100.30:60000"},
+            .allowed_ips = {"10.0.0.9/32"},
+            .latest_handshake_epoch_sec = 1710000100,
+            .transfer_rx_bytes = 500,
+            .transfer_tx_bytes = 700,
+        }}));
+    EXPECT_EQ(
+        runtime.step_at(std::chrono::steady_clock::time_point{} + 1s).auth_commands_submitted,
+        1U);
+
+    spin_until([&] {
+        wg_client.snapshots.push(make_snapshot(
+            "wg0",
+            {{
+                .public_key = "peer-z",
+                .endpoint = std::string{"198.51.100.30:60000"},
+                .allowed_ips = {"10.0.0.9/32"},
+                .latest_handshake_epoch_sec = 1710000100,
+                .transfer_rx_bytes = 500,
+                .transfer_tx_bytes = 700,
+            }}));
+        const auto result = runtime.step_at(std::chrono::steady_clock::time_point{} + 2s);
+        return result.auth_results_processed == 1U;
+    });
+
+    wg_client.snapshots.push(make_snapshot(
+        "wg0",
+        {{
+            .public_key = "peer-z",
+            .endpoint = std::string{"198.51.100.30:60000"},
+            .allowed_ips = {"10.0.0.9/32"},
+            .latest_handshake_epoch_sec = 1710000100,
+            .transfer_rx_bytes = 500,
+            .transfer_tx_bytes = 700,
+        }}));
+    EXPECT_EQ(
+        runtime.step_at(std::chrono::steady_clock::time_point{} + 33s).executed_commands.size(),
+        1U);
+    EXPECT_EQ(radius_client.accounting_requests.size(), 2U);
+    EXPECT_EQ(
+        radius_client.accounting_requests.back().event_type,
+        radius::AccountingEventType::InterimUpdate);
+
+    wg_client.snapshots.push(make_snapshot(
+        "wg0",
+        {{
+            .public_key = "peer-z",
+            .endpoint = std::string{"198.51.100.30:60000"},
+            .allowed_ips = {"10.0.0.9/32"},
+            .latest_handshake_epoch_sec = 1710000100,
+            .transfer_rx_bytes = 500,
+            .transfer_tx_bytes = 700,
+        }}));
+    EXPECT_EQ(
+        runtime.step_at(std::chrono::steady_clock::time_point{} + 65s).executed_commands.size(),
+        1U);
+    EXPECT_EQ(radius_client.accounting_requests.size(), 3U);
+    EXPECT_EQ(radius_client.accounting_requests.back().event_type, radius::AccountingEventType::Stop);
+    EXPECT_EQ(
+        radius_client.accounting_requests.back().stop_reason,
+        std::optional{domain::AccountingStopReason::InactivityHandshakeAndTraffic});
 }

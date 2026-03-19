@@ -35,6 +35,9 @@ struct Event {
     std::string peer_public_key;
     std::optional<std::string> endpoint;
     std::vector<std::string> allowed_ips;
+    std::uint64_t latest_handshake_epoch_sec{0};
+    std::uint64_t transfer_rx_bytes{0};
+    std::uint64_t transfer_tx_bytes{0};
 };
 
 class SnapshotParser {

@@ -67,6 +67,9 @@ TEST_CASE(session_manager_emits_policy_and_accounting_commands_on_access_accept)
     EXPECT_EQ(commands.at(0).accounting_session_id, commands.at(1).accounting_session_id);
     EXPECT_TRUE(commands.at(0).policy.has_value());
     EXPECT_EQ(commands.at(0).policy->ingress_bps, policy.ingress_bps);
+    EXPECT_TRUE(commands.at(1).accounting_context.has_value());
+    EXPECT_EQ(commands.at(1).accounting_context->endpoint, std::optional<std::string>{"198.51.100.10:12345"});
+    EXPECT_EQ(commands.at(1).accounting_context->allowed_ips.size(), 1U);
     EXPECT_EQ(manager.find_session("peer-a")->state(), SessionState::AccountingStartPending);
     EXPECT_EQ(manager.find_session("peer-a")->accounting_session_id(), commands.at(0).accounting_session_id);
 }
@@ -109,6 +112,9 @@ TEST_CASE(session_manager_stops_accounting_when_active_peer_is_removed_and_keeps
     EXPECT_EQ(commands.size(), 1U);
     EXPECT_EQ(commands.front().type, CommandType::StopAccounting);
     EXPECT_TRUE(commands.front().accounting_session_id.has_value());
+    EXPECT_EQ(
+        commands.front().accounting_context->stop_reason,
+        std::optional{AccountingStopReason::PeerRemoved});
     EXPECT_TRUE(manager.find_session("peer-a") != nullptr);
     EXPECT_EQ(manager.find_session("peer-a")->state(), SessionState::AccountingStopPending);
     EXPECT_TRUE(manager.on_accounting_stopped("peer-a").empty());
@@ -175,4 +181,63 @@ TEST_CASE(session_manager_peer_removal_is_idempotent) {
     const auto commands = manager.on_peer_removed("peer-a");
 
     EXPECT_TRUE(commands.empty());
+}
+
+TEST_CASE(session_manager_emits_interim_accounting_after_interval_for_active_session) {
+    SessionManager manager{
+        AuthorizationTrigger::OnPeerAppearance,
+        RejectMode::RemovePeer,
+        {.acct_interim_interval = 30s, .inactive_timeout = std::nullopt}};
+
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
+    EXPECT_EQ(manager.on_access_accept("peer-a", SessionPolicy{}).size(), 2U);
+    EXPECT_TRUE(
+        manager.on_accounting_started("peer-a", std::chrono::steady_clock::time_point{}).empty());
+
+    const auto commands = manager.on_timer(std::chrono::steady_clock::time_point{} + 31s);
+
+    EXPECT_EQ(commands.size(), 1U);
+    EXPECT_EQ(commands.front().type, CommandType::InterimAccounting);
+    EXPECT_EQ(commands.front().peer_public_key, "peer-a");
+    EXPECT_TRUE(commands.front().accounting_session_id.has_value());
+}
+
+TEST_CASE(session_manager_stops_active_session_when_handshake_and_traffic_are_both_inactive) {
+    SessionManager manager{
+        AuthorizationTrigger::OnPeerAppearance,
+        RejectMode::RemovePeer,
+        {
+            .acct_interim_interval = std::nullopt,
+            .inactive_timeout = 30s,
+            .inactivity_strategy = wg_radius::config::InactivityStrategy::HandshakeAndTraffic,
+        }};
+
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
+    manager.record_snapshot_activity("peer-a", 100, 10, 20, std::chrono::steady_clock::time_point{});
+    EXPECT_EQ(manager.on_access_accept("peer-a", SessionPolicy{}).size(), 2U);
+    EXPECT_TRUE(
+        manager.on_accounting_started("peer-a", std::chrono::steady_clock::time_point{}).empty());
+
+    EXPECT_TRUE(manager.on_timer(std::chrono::steady_clock::time_point{} + 20s).empty());
+
+    const auto commands = manager.on_timer(std::chrono::steady_clock::time_point{} + 31s);
+
+    EXPECT_EQ(commands.size(), 1U);
+    EXPECT_EQ(commands.front().type, CommandType::StopAccounting);
+    EXPECT_EQ(
+        commands.front().accounting_context->stop_reason,
+        std::optional{AccountingStopReason::InactivityHandshakeAndTraffic});
+    EXPECT_EQ(manager.find_session("peer-a")->state(), SessionState::AccountingStopPending);
+}
+
+TEST_CASE(session_manager_turns_disconnect_request_into_remove_peer_for_present_session) {
+    SessionManager manager{AuthorizationTrigger::OnPeerAppearance, RejectMode::RemovePeer};
+
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
+
+    const auto commands = manager.on_disconnect_request("peer-a");
+
+    EXPECT_EQ(commands.size(), 1U);
+    EXPECT_EQ(commands.front().type, CommandType::RemovePeer);
+    EXPECT_EQ(commands.front().peer_public_key, "peer-a");
 }

@@ -372,4 +372,7 @@ TEST_CASE(profile_runtime_processes_disconnect_request_into_remove_and_stop_acco
     EXPECT_EQ(peer_controller.remove_calls, 1);
     EXPECT_EQ(radius_client.accounting_requests.size(), 1U);
     EXPECT_EQ(radius_client.accounting_requests.front().event_type, radius::AccountingEventType::Stop);
+    EXPECT_EQ(
+        radius_client.accounting_requests.front().stop_reason,
+        std::optional{domain::AccountingStopReason::DisconnectRequest});
 }

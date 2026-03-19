@@ -27,7 +27,7 @@ std::vector<domain::Command> WgEventRouter::handle(
                 event.peer_public_key,
                 {.endpoint = event.endpoint, .allowed_ips = event.allowed_ips});
         case wireguard::EventType::PeerRemoved:
-            return session_manager_.on_peer_removed(event.peer_public_key);
+            return session_manager_.on_peer_removed(event.peer_public_key, now);
         case wireguard::EventType::HandshakeObserved:
             return session_manager_.on_handshake_observed(
                 event.peer_public_key,

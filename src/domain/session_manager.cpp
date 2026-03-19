@@ -147,6 +147,8 @@ std::vector<Command> SessionManager::on_disconnect_request(const std::string& pe
         return {};
     }
 
+    it->second.note_stop_reason(AccountingStopReason::DisconnectRequest);
+
     return {{.type = CommandType::RemovePeer,
              .peer_public_key = peer_public_key,
              .accounting_session_id = std::nullopt,
@@ -197,7 +199,7 @@ std::vector<Command> SessionManager::on_peer_blocked(const std::string& peer_pub
     return {};
 }
 
-std::vector<Command> SessionManager::on_peer_removed(const std::string& peer_public_key) {
+std::vector<Command> SessionManager::on_peer_removed(const std::string& peer_public_key, TimePoint now) {
     auto it = sessions_.find(peer_public_key);
     if (it == sessions_.end()) {
         return {};
@@ -206,7 +208,8 @@ std::vector<Command> SessionManager::on_peer_removed(const std::string& peer_pub
     it->second.observe_peer_removed();
 
     if (it->second.state() == SessionState::Active) {
-        if (!it->second.begin_accounting_stop(AccountingStopReason::PeerRemoved)) {
+        const auto stop_reason = it->second.stop_reason().value_or(AccountingStopReason::PeerRemoved);
+        if (!it->second.begin_accounting_stop(stop_reason)) {
             return {};
         }
         return {{.type = CommandType::StopAccounting,
@@ -214,7 +217,7 @@ std::vector<Command> SessionManager::on_peer_removed(const std::string& peer_pub
                  .accounting_session_id = it->second.accounting_session_id(),
                  .policy = std::nullopt,
                  .authorization_context = std::nullopt,
-                 .accounting_context = make_accounting_context(it->second)}};
+                 .accounting_context = make_accounting_context(it->second, now)}};
     }
 
     if (it->second.state() == SessionState::AccountingStopPending) {
@@ -273,7 +276,7 @@ std::vector<Command> SessionManager::on_timer(TimePoint now) {
                      .accounting_session_id = session.accounting_session_id(),
                      .policy = std::nullopt,
                      .authorization_context = std::nullopt,
-                     .accounting_context = make_accounting_context(session)});
+                     .accounting_context = make_accounting_context(session, now)});
                 continue;
             }
         }
@@ -291,18 +294,26 @@ std::vector<Command> SessionManager::on_timer(TimePoint now) {
                  .accounting_session_id = session.accounting_session_id(),
                  .policy = std::nullopt,
                  .authorization_context = std::nullopt,
-                 .accounting_context = make_accounting_context(session)});
+                 .accounting_context = make_accounting_context(session, now)});
         }
     }
 
     return commands;
 }
 
-std::optional<AccountingContext> SessionManager::make_accounting_context(const PeerSession& session) const {
+std::optional<AccountingContext> SessionManager::make_accounting_context(
+    const PeerSession& session,
+    std::optional<TimePoint> now) const {
+    std::optional<std::chrono::seconds> session_duration;
+    if (now.has_value() && session.session_started_at().has_value()) {
+        session_duration = std::chrono::duration_cast<std::chrono::seconds>(*now - *session.session_started_at());
+    }
+
     return AccountingContext{
         .endpoint = session.endpoint(),
         .allowed_ips = session.allowed_ips(),
         .session_started_at = session.session_started_at(),
+        .session_duration = session_duration,
         .transfer_rx_bytes = session.transfer_rx_bytes(),
         .transfer_tx_bytes = session.transfer_tx_bytes(),
         .stop_reason = session.stop_reason(),

@@ -52,12 +52,6 @@ CommandExecutionResult CommandExecutor::execute(const domain::Command& command) 
                 framed_ip_address = first_allowed_ip.substr(0, slash);
             }
 
-            std::optional<std::chrono::seconds> session_duration;
-            if (accounting_context.session_started_at.has_value()) {
-                session_duration = std::chrono::duration_cast<std::chrono::seconds>(
-                    std::chrono::steady_clock::now() - *accounting_context.session_started_at);
-            }
-
             const bool ok = radius_client_.account({
                 .event_type =
                     command.type == domain::CommandType::StartAccounting
@@ -70,7 +64,7 @@ CommandExecutionResult CommandExecutor::execute(const domain::Command& command) 
                 .accounting_session_id = *command.accounting_session_id,
                 .endpoint = accounting_context.endpoint,
                 .framed_ip_address = framed_ip_address,
-                .session_duration = session_duration,
+                .session_duration = accounting_context.session_duration,
                 .transfer_rx_bytes = accounting_context.transfer_rx_bytes,
                 .transfer_tx_bytes = accounting_context.transfer_tx_bytes,
                 .stop_reason = accounting_context.stop_reason,

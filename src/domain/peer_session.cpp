@@ -222,6 +222,10 @@ bool PeerSession::begin_removal() {
     return true;
 }
 
+void PeerSession::note_stop_reason(AccountingStopReason reason) {
+    stop_reason_ = reason;
+}
+
 void PeerSession::observe_peer_removed() {
     peer_present_ = false;
 }

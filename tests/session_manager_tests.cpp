@@ -234,10 +234,18 @@ TEST_CASE(session_manager_turns_disconnect_request_into_remove_peer_for_present_
     SessionManager manager{AuthorizationTrigger::OnPeerAppearance, RejectMode::RemovePeer};
 
     EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
+    EXPECT_EQ(manager.on_access_accept("peer-a", SessionPolicy{}).size(), 2U);
+    EXPECT_TRUE(manager.on_accounting_started("peer-a").empty());
 
     const auto commands = manager.on_disconnect_request("peer-a");
 
     EXPECT_EQ(commands.size(), 1U);
     EXPECT_EQ(commands.front().type, CommandType::RemovePeer);
     EXPECT_EQ(commands.front().peer_public_key, "peer-a");
+
+    const auto stop_commands = manager.on_peer_removed("peer-a");
+    EXPECT_EQ(stop_commands.size(), 1U);
+    EXPECT_EQ(
+        stop_commands.front().accounting_context->stop_reason,
+        std::optional{AccountingStopReason::DisconnectRequest});
 }

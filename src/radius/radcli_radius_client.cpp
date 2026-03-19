@@ -38,6 +38,7 @@ constexpr char kDictionary[] =
     "ATTRIBUTE Acct-Session-Id 44 string\n"
     "ATTRIBUTE Acct-Session-Time 46 integer\n"
     "ATTRIBUTE Acct-Terminate-Cause 49 integer\n"
+    "ATTRIBUTE Connect-Info 77 string\n"
     "ATTRIBUTE Acct-Interim-Interval 85 integer\n"
     "ATTRIBUTE Idle-Timeout 28 integer\n"
     "ATTRIBUTE Message-Authenticator 80 string\n"
@@ -112,6 +113,21 @@ const char* stop_reason_string(domain::AccountingStopReason reason) {
     }
 
     return "unknown";
+}
+
+std::optional<std::uint32_t> stop_reason_code(domain::AccountingStopReason reason) {
+    switch (reason) {
+        case domain::AccountingStopReason::PeerRemoved:
+            return 10;  // NAS-Request
+        case domain::AccountingStopReason::InactivityHandshake:
+        case domain::AccountingStopReason::InactivityTraffic:
+        case domain::AccountingStopReason::InactivityHandshakeAndTraffic:
+            return 4;  // Idle-Timeout
+        case domain::AccountingStopReason::DisconnectRequest:
+            return 6;  // Admin-Reset
+    }
+
+    return std::nullopt;
 }
 
 }  // namespace
@@ -307,10 +323,22 @@ bool RadcliRadiusClient::account(const AccountingRequest& request) {
         return false;
     }
 
-    if (request.endpoint.has_value() &&
-        rc_avpair_add(handle_.get(), &send, PW_REPLY_MESSAGE, request.endpoint->c_str(), -1, 0) == nullptr) {
-        cleanup();
-        return false;
+    if (request.endpoint.has_value() || request.stop_reason.has_value()) {
+        std::string connect_info;
+        if (request.endpoint.has_value()) {
+            connect_info = std::string{"wg-endpoint="} + *request.endpoint;
+        }
+        if (request.stop_reason.has_value()) {
+            if (!connect_info.empty()) {
+                connect_info.append(";");
+            }
+            connect_info.append("wg-stop-reason=");
+            connect_info.append(stop_reason_string(*request.stop_reason));
+        }
+        if (rc_avpair_add(handle_.get(), &send, 77, connect_info.c_str(), -1, 0) == nullptr) {
+            cleanup();
+            return false;
+        }
     }
 
     if (request.framed_ip_address.has_value()) {
@@ -343,16 +371,19 @@ bool RadcliRadiusClient::account(const AccountingRequest& request) {
         }
     }
 
-    if (request.stop_reason.has_value() &&
-        rc_avpair_add(
-            handle_.get(),
-            &send,
-            PW_REPLY_MESSAGE,
-            stop_reason_string(*request.stop_reason),
-            -1,
-            0) == nullptr) {
-        cleanup();
-        return false;
+    if (request.stop_reason.has_value()) {
+        const auto terminate_cause = stop_reason_code(*request.stop_reason);
+        if (terminate_cause.has_value() &&
+            rc_avpair_add(
+                handle_.get(),
+                &send,
+                PW_ACCT_TERMINATE_CAUSE,
+                &*terminate_cause,
+                sizeof(*terminate_cause),
+                0) == nullptr) {
+            cleanup();
+            return false;
+        }
     }
 
     const auto result = rc_acct(handle_.get(), 0, send);

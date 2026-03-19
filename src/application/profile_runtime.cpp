@@ -108,7 +108,7 @@ std::vector<domain::Command> ProfileRuntime::on_command_executed(
         case domain::CommandType::ApplySessionPolicy:
             return {};
         case domain::CommandType::RemovePeer:
-            return session_manager_.on_peer_removed(execution_result.command.peer_public_key);
+            return session_manager_.on_peer_removed(execution_result.command.peer_public_key, now);
     }
 
     return {};

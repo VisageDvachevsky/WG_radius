@@ -74,14 +74,18 @@ public:
         TimePoint now = TimePoint{});
     [[nodiscard]] std::vector<Command> on_accounting_stopped(const std::string& peer_public_key);
     [[nodiscard]] std::vector<Command> on_peer_blocked(const std::string& peer_public_key);
-    [[nodiscard]] std::vector<Command> on_peer_removed(const std::string& peer_public_key);
+    [[nodiscard]] std::vector<Command> on_peer_removed(
+        const std::string& peer_public_key,
+        TimePoint now = TimePoint{});
     [[nodiscard]] std::vector<Command> on_timer(TimePoint now);
 
     [[nodiscard]] const PeerSession* find_session(const std::string& peer_public_key) const;
 
 private:
     [[nodiscard]] std::string generate_accounting_session_id(const std::string& peer_public_key);
-    [[nodiscard]] std::optional<AccountingContext> make_accounting_context(const PeerSession& session) const;
+    [[nodiscard]] std::optional<AccountingContext> make_accounting_context(
+        const PeerSession& session,
+        std::optional<TimePoint> now = std::nullopt) const;
     [[nodiscard]] PeerSession& get_or_create_session(const std::string& peer_public_key);
 
     AuthorizationTrigger trigger_mode_;

@@ -48,6 +48,7 @@ struct AccountingContext {
     std::optional<std::string> endpoint;
     std::vector<std::string> allowed_ips;
     std::optional<SessionTimePoint> session_started_at;
+    std::optional<std::chrono::seconds> session_duration;
     std::uint64_t transfer_rx_bytes{0};
     std::uint64_t transfer_tx_bytes{0};
     std::optional<AccountingStopReason> stop_reason;
@@ -94,6 +95,7 @@ public:
     [[nodiscard]] bool begin_block();
     [[nodiscard]] bool mark_blocked();
     [[nodiscard]] bool begin_removal();
+    void note_stop_reason(AccountingStopReason reason);
     void observe_peer_removed();
 
 private:

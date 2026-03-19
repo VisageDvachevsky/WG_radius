@@ -184,7 +184,7 @@ cat >"$tmp_dir/freeradius/mods-enabled/wg_phase2_accounting" <<EOF
 linelog wg_phase2_accounting {
     filename = /var/log/freeradius/phase2.log
     permissions = 0644
-    format = "accounting user=%{%{User-Name}:-<none>} status=%{%{Acct-Status-Type}:-<none>}"
+    format = "accounting user=%{%{User-Name}:-<none>} status=%{%{Acct-Status-Type}:-<none>} framed_ip=%{%{Framed-IP-Address}:-<none>} in_octets=%{%{Acct-Input-Octets}:-<none>} out_octets=%{%{Acct-Output-Octets}:-<none>} session_time=%{%{Acct-Session-Time}:-<none>} term_cause=%{%{Acct-Terminate-Cause}:-<none>} connect_info=%{%{Connect-Info}:-<none>}"
 }
 EOF
 
@@ -292,12 +292,16 @@ sleep 0.4
 wait_for_grep "auth-request user=$accept_public_key" "$radius_log"
 wait_for_grep "access-accept user=$accept_public_key" "$radius_log"
 wait_for_grep "accounting user=$accept_public_key status=Start" "$radius_log"
+wait_for_grep "accounting user=$accept_public_key status=Start framed_ip=10.30.0.2" "$radius_log"
+wait_for_grep "connect_info=wg-endpoint=192.0.2.2:" "$radius_log"
 
 sudo_pw ip netns exec "$client_ns" ping -c 1 -W 2 10.30.0.1 >/dev/null
 
 wait_for_condition "sudo_pw wg show '$iface_name' latest-handshakes | grep '$accept_public_key' | awk '{print \$2}' | grep -qv '^0$'" 80 0.1
 wait_for_grep "accounting user=$accept_public_key status=Interim-Update" "$radius_log" 120 0.1
+wait_for_condition "grep 'accounting user=$accept_public_key status=Interim-Update' '$radius_log' | grep -E 'in_octets=[1-9][0-9]*' | grep -E 'out_octets=[1-9][0-9]*' >/dev/null" 120 0.1
 wait_for_grep "accounting user=$accept_public_key status=Stop" "$radius_log" 120 0.1
+wait_for_condition "grep 'accounting user=$accept_public_key status=Stop' '$radius_log' | grep -E 'session_time=[1-9][0-9]*' | grep 'term_cause=Idle-Timeout' | grep 'connect_info=wg-endpoint=192.0.2.2:.*wg-stop-reason=inactive-handshake-and-traffic' >/dev/null" 120 0.1
 
 if docker logs "$radius_container" 2>&1 | grep -q "Received packet without Message-Authenticator"; then
     echo "freeradius reported Access-Request without Message-Authenticator" >&2

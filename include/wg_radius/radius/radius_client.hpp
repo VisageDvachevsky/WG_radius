@@ -2,6 +2,7 @@
 
 #include "wg_radius/domain/peer_session.hpp"
 
+#include <chrono>
 #include <optional>
 #include <string>
 #include <vector>

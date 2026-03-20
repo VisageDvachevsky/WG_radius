@@ -28,6 +28,44 @@ int print_usage() {
     return 2;
 }
 
+const char* command_type_name(wg_radius::domain::CommandType type) {
+    using wg_radius::domain::CommandType;
+
+    switch (type) {
+        case CommandType::SendAccessRequest:
+            return "SendAccessRequest";
+        case CommandType::ApplySessionPolicy:
+            return "ApplySessionPolicy";
+        case CommandType::StartAccounting:
+            return "StartAccounting";
+        case CommandType::InterimAccounting:
+            return "InterimAccounting";
+        case CommandType::StopAccounting:
+            return "StopAccounting";
+        case CommandType::RemovePeer:
+            return "RemovePeer";
+        case CommandType::BlockPeer:
+            return "BlockPeer";
+    }
+
+    return "Unknown";
+}
+
+const char* execution_status_name(wg_radius::application::CommandExecutionStatus status) {
+    using wg_radius::application::CommandExecutionStatus;
+
+    switch (status) {
+        case CommandExecutionStatus::Executed:
+            return "Executed";
+        case CommandExecutionStatus::Ignored:
+            return "Ignored";
+        case CommandExecutionStatus::Failed:
+            return "Failed";
+    }
+
+    return "Unknown";
+}
+
 struct RuntimeContext {
     wg_radius::domain::SessionManager session_manager;
     wg_radius::coa::UdpRequestSource coa_request_source;
@@ -115,6 +153,13 @@ int main(int argc, char** argv) {
                       << " auth_submitted=" << result.auth_commands_submitted
                       << " auth_results=" << result.auth_results_processed
                       << " executed=" << result.executed_commands.size() << '\n';
+            for (const auto& execution_result : result.executed_commands) {
+                std::cout << "profile " << profile.name
+                          << " executed_command type="
+                          << command_type_name(execution_result.command.type)
+                          << " peer=" << execution_result.command.peer_public_key
+                          << " status=" << execution_status_name(execution_result.status) << '\n';
+            }
         }
 
         if (!run_once) {

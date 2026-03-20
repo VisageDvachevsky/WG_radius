@@ -164,6 +164,15 @@ bool PeerSession::mark_interim_accounting(TimePoint now) {
     return true;
 }
 
+bool PeerSession::update_policy(SessionPolicy policy) {
+    if (state_ != SessionState::Active) {
+        return false;
+    }
+
+    applied_policy_ = std::move(policy);
+    return true;
+}
+
 bool PeerSession::begin_accounting_stop(AccountingStopReason reason) {
     if (state_ != SessionState::Active) {
         return false;

@@ -14,6 +14,20 @@ bool inactivity_elapsed(
     return activity_at.has_value() && now - *activity_at >= timeout;
 }
 
+SessionPolicy merge_policy(const std::optional<SessionPolicy>& current, const SessionPolicy& incoming) {
+    SessionPolicy merged = current.value_or(SessionPolicy{});
+    if (incoming.ingress_bps.has_value()) {
+        merged.ingress_bps = incoming.ingress_bps;
+    }
+    if (incoming.egress_bps.has_value()) {
+        merged.egress_bps = incoming.egress_bps;
+    }
+    if (incoming.session_timeout.has_value()) {
+        merged.session_timeout = incoming.session_timeout;
+    }
+    return merged;
+}
+
 }  // namespace
 
 SessionManager::SessionManager(AuthorizationTrigger trigger_mode, RejectMode reject_mode)
@@ -181,10 +195,55 @@ std::vector<Command> SessionManager::on_disconnect_request(const std::string& pe
 
     it->second.note_stop_reason(AccountingStopReason::DisconnectRequest);
 
+    if (reject_mode_ == RejectMode::BlockPeer) {
+        std::vector<Command> commands;
+        commands.push_back(
+            {.type = CommandType::BlockPeer,
+             .peer_public_key = peer_public_key,
+             .accounting_session_id = std::nullopt,
+             .policy = std::nullopt,
+             .authorization_context = std::nullopt,
+             .accounting_context = std::nullopt});
+
+        if (it->second.state() == SessionState::Active &&
+            it->second.begin_accounting_stop(AccountingStopReason::DisconnectRequest)) {
+            commands.push_back(
+                {.type = CommandType::StopAccounting,
+                 .peer_public_key = peer_public_key,
+                 .accounting_session_id = it->second.accounting_session_id(),
+                 .policy = std::nullopt,
+                 .authorization_context = std::nullopt,
+                 .accounting_context = make_accounting_context(it->second)});
+        }
+
+        return commands;
+    }
+
     return {{.type = CommandType::RemovePeer,
              .peer_public_key = peer_public_key,
              .accounting_session_id = std::nullopt,
              .policy = std::nullopt,
+             .authorization_context = std::nullopt,
+             .accounting_context = std::nullopt}};
+}
+
+std::vector<Command> SessionManager::on_coa_request(
+    const std::string& peer_public_key,
+    SessionPolicy policy) {
+    auto it = sessions_.find(peer_public_key);
+    if (it == sessions_.end()) {
+        return {};
+    }
+
+    auto merged_policy = merge_policy(it->second.applied_policy(), policy);
+    if (!it->second.update_policy(merged_policy)) {
+        return {};
+    }
+
+    return {{.type = CommandType::ApplySessionPolicy,
+             .peer_public_key = peer_public_key,
+             .accounting_session_id = it->second.accounting_session_id(),
+             .policy = std::move(merged_policy),
              .authorization_context = std::nullopt,
              .accounting_context = std::nullopt}};
 }

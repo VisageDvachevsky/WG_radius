@@ -353,3 +353,97 @@ TEST_CASE(session_manager_turns_disconnect_request_into_remove_peer_for_present_
         stop_commands.front().accounting_context->stop_reason,
         std::optional{AccountingStopReason::DisconnectRequest});
 }
+
+TEST_CASE(session_manager_turns_coa_request_into_live_policy_update_for_active_session) {
+    SessionManager manager{AuthorizationTrigger::OnPeerAppearance, RejectMode::RemovePeer};
+    SessionPolicy initial_policy{
+        .ingress_bps = 10'000,
+        .egress_bps = 20'000,
+        .session_timeout = 1h,
+    };
+    SessionPolicy updated_policy{
+        .ingress_bps = 30'000,
+        .egress_bps = 40'000,
+        .session_timeout = 2h,
+    };
+
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
+    EXPECT_EQ(manager.on_access_accept("peer-a", initial_policy).size(), 2U);
+    EXPECT_TRUE(manager.on_accounting_started("peer-a").empty());
+
+    const auto commands = manager.on_coa_request("peer-a", updated_policy);
+
+    EXPECT_EQ(commands.size(), 1U);
+    EXPECT_EQ(commands.front().type, CommandType::ApplySessionPolicy);
+    EXPECT_EQ(commands.front().peer_public_key, "peer-a");
+    EXPECT_TRUE(commands.front().policy.has_value());
+    EXPECT_EQ(commands.front().policy->ingress_bps, updated_policy.ingress_bps);
+    EXPECT_EQ(commands.front().policy->egress_bps, updated_policy.egress_bps);
+    EXPECT_EQ(commands.front().policy->session_timeout, updated_policy.session_timeout);
+    EXPECT_EQ(manager.find_session("peer-a")->applied_policy()->ingress_bps, updated_policy.ingress_bps);
+    EXPECT_EQ(manager.find_session("peer-a")->applied_policy()->egress_bps, updated_policy.egress_bps);
+    EXPECT_EQ(manager.find_session("peer-a")->applied_policy()->session_timeout, updated_policy.session_timeout);
+}
+
+TEST_CASE(session_manager_ignores_coa_request_for_non_active_session) {
+    SessionManager manager{AuthorizationTrigger::OnPeerAppearance, RejectMode::RemovePeer};
+
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
+
+    const auto commands = manager.on_coa_request(
+        "peer-a",
+        {
+            .ingress_bps = 30'000,
+            .egress_bps = 40'000,
+            .session_timeout = 2h,
+        });
+
+    EXPECT_TRUE(commands.empty());
+    EXPECT_TRUE(manager.find_session("peer-a")->applied_policy() == std::nullopt);
+}
+
+TEST_CASE(session_manager_turns_disconnect_request_into_block_and_stop_accounting_in_block_mode) {
+    SessionManager manager{AuthorizationTrigger::OnPeerAppearance, RejectMode::BlockPeer};
+
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
+    EXPECT_EQ(manager.on_access_accept("peer-a", SessionPolicy{}).size(), 2U);
+    EXPECT_TRUE(manager.on_accounting_started("peer-a").empty());
+
+    const auto commands = manager.on_disconnect_request("peer-a");
+
+    EXPECT_EQ(commands.size(), 2U);
+    EXPECT_EQ(commands.front().type, CommandType::BlockPeer);
+    EXPECT_EQ(commands.back().type, CommandType::StopAccounting);
+    EXPECT_EQ(
+        commands.back().accounting_context->stop_reason,
+        std::optional{AccountingStopReason::DisconnectRequest});
+    EXPECT_EQ(manager.find_session("peer-a")->state(), SessionState::AccountingStopPending);
+}
+
+TEST_CASE(session_manager_merges_partial_coa_request_into_existing_active_policy) {
+    SessionManager manager{AuthorizationTrigger::OnPeerAppearance, RejectMode::RemovePeer};
+    SessionPolicy initial_policy{
+        .ingress_bps = 10'000,
+        .egress_bps = 20'000,
+        .session_timeout = 1h,
+    };
+
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
+    EXPECT_EQ(manager.on_access_accept("peer-a", initial_policy).size(), 2U);
+    EXPECT_TRUE(manager.on_accounting_started("peer-a").empty());
+
+    const auto commands = manager.on_coa_request(
+        "peer-a",
+        {.ingress_bps = 30'000, .egress_bps = std::nullopt, .session_timeout = std::nullopt});
+
+    EXPECT_EQ(commands.size(), 1U);
+    EXPECT_TRUE(commands.front().policy.has_value());
+    EXPECT_EQ(commands.front().policy->ingress_bps, std::optional<std::uint64_t>{30'000});
+    EXPECT_EQ(commands.front().policy->egress_bps, std::optional<std::uint64_t>{20'000});
+    EXPECT_EQ(commands.front().policy->session_timeout, std::optional<std::chrono::seconds>{1h});
+    EXPECT_EQ(manager.find_session("peer-a")->applied_policy()->ingress_bps, std::optional<std::uint64_t>{30'000});
+    EXPECT_EQ(manager.find_session("peer-a")->applied_policy()->egress_bps, std::optional<std::uint64_t>{20'000});
+    EXPECT_EQ(
+        manager.find_session("peer-a")->applied_policy()->session_timeout,
+        std::optional<std::chrono::seconds>{1h});
+}

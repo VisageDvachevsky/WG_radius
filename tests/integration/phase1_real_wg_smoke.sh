@@ -60,7 +60,7 @@ acct_host = 127.0.0.1
 acct_port = 1813
 secret = integration-secret
 nas_identifier = wg-it
-authorization_trigger = peer-appearance
+authorization_trigger = first-handshake
 reject_handling = remove-peer
 EOF
 

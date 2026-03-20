@@ -410,3 +410,170 @@ TEST_CASE(profile_runtime_processes_disconnect_request_into_remove_and_stop_acco
         radius_client.accounting_requests.front().stop_reason,
         std::optional{domain::AccountingStopReason::DisconnectRequest});
 }
+
+TEST_CASE(profile_runtime_processes_coa_request_into_live_policy_reapply) {
+    FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnPeerAppearance,
+        domain::RejectMode::RemovePeer};
+    application::WgEventRouter router{manager};
+    application::WgPollingCoordinator coordinator{"wg0", wg_client, router};
+    FakeAuthQueue auth_queue;
+    FakePeerController peer_controller;
+    FakeTrafficShaper traffic_shaper;
+    FakeCoaRequestSource coa_source;
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{
+        coordinator,
+        auth_queue,
+        manager,
+        executor,
+        &coa_source};
+
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
+    EXPECT_EQ(
+        manager.on_access_accept(
+            "peer-a",
+            {.ingress_bps = 10'000, .egress_bps = 20'000, .session_timeout = std::chrono::seconds{60}})
+            .size(),
+        2U);
+    EXPECT_TRUE(manager.on_accounting_started("peer-a").empty());
+
+    coa_source.requests.push(
+        {
+            .type = coa::RequestType::Coa,
+            .peer_public_key = "peer-a",
+            .policy =
+                domain::SessionPolicy{
+                    .ingress_bps = 30'000,
+                    .egress_bps = 40'000,
+                    .session_timeout = std::chrono::seconds{120},
+                },
+        });
+    wg_client.snapshots.push(make_snapshot("wg0", {}));
+
+    const auto result = runtime.step();
+
+    EXPECT_EQ(result.executed_commands.size(), 1U);
+    EXPECT_EQ(result.executed_commands.front().command.type, domain::CommandType::ApplySessionPolicy);
+    EXPECT_EQ(result.executed_commands.front().status, application::CommandExecutionStatus::Executed);
+    EXPECT_EQ(traffic_shaper.apply_calls, 1);
+    EXPECT_EQ(peer_controller.remove_calls, 0);
+    EXPECT_TRUE(manager.find_session("peer-a")->applied_policy().has_value());
+    EXPECT_EQ(manager.find_session("peer-a")->applied_policy()->ingress_bps, std::optional<std::uint64_t>{30'000});
+    EXPECT_EQ(manager.find_session("peer-a")->applied_policy()->egress_bps, std::optional<std::uint64_t>{40'000});
+    EXPECT_EQ(
+        manager.find_session("peer-a")->applied_policy()->session_timeout,
+        std::optional<std::chrono::seconds>{std::chrono::seconds{120}});
+}
+
+TEST_CASE(profile_runtime_processes_disconnect_request_into_block_and_stop_accounting_in_block_mode) {
+    FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnPeerAppearance,
+        domain::RejectMode::BlockPeer};
+    application::WgEventRouter router{manager};
+    application::WgPollingCoordinator coordinator{"wg0", wg_client, router};
+    FakeAuthQueue auth_queue;
+    FakePeerController peer_controller;
+    FakeTrafficShaper traffic_shaper;
+    FakeCoaRequestSource coa_source;
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{
+        coordinator,
+        auth_queue,
+        manager,
+        executor,
+        &coa_source};
+
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
+    EXPECT_EQ(manager.on_access_accept("peer-a", domain::SessionPolicy{}).size(), 2U);
+    EXPECT_TRUE(manager.on_accounting_started("peer-a").empty());
+
+    coa_source.requests.push(
+        {.type = coa::RequestType::Disconnect, .peer_public_key = "peer-a", .policy = std::nullopt});
+    wg_client.snapshots.push(make_snapshot("wg0", {}));
+
+    const auto result = runtime.step();
+
+    EXPECT_EQ(result.executed_commands.size(), 2U);
+    EXPECT_EQ(result.executed_commands.front().command.type, domain::CommandType::BlockPeer);
+    EXPECT_EQ(result.executed_commands.back().command.type, domain::CommandType::StopAccounting);
+    EXPECT_EQ(peer_controller.remove_calls, 1);
+    EXPECT_EQ(radius_client.accounting_requests.size(), 1U);
+    EXPECT_EQ(radius_client.accounting_requests.front().event_type, radius::AccountingEventType::Stop);
+    EXPECT_EQ(
+        radius_client.accounting_requests.front().stop_reason,
+        std::optional{domain::AccountingStopReason::DisconnectRequest});
+    EXPECT_TRUE(manager.find_session("peer-a") == nullptr);
+}
+
+TEST_CASE(profile_runtime_merges_partial_coa_request_into_existing_policy_before_reapply) {
+    FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnPeerAppearance,
+        domain::RejectMode::RemovePeer};
+    application::WgEventRouter router{manager};
+    application::WgPollingCoordinator coordinator{"wg0", wg_client, router};
+    FakeAuthQueue auth_queue;
+    FakePeerController peer_controller;
+    FakeTrafficShaper traffic_shaper;
+    FakeCoaRequestSource coa_source;
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{
+        coordinator,
+        auth_queue,
+        manager,
+        executor,
+        &coa_source};
+
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
+    EXPECT_EQ(
+        manager.on_access_accept(
+            "peer-a",
+            {.ingress_bps = 10'000, .egress_bps = 20'000, .session_timeout = std::chrono::seconds{60}})
+            .size(),
+        2U);
+    EXPECT_TRUE(manager.on_accounting_started("peer-a").empty());
+
+    coa_source.requests.push(
+        {
+            .type = coa::RequestType::Coa,
+            .peer_public_key = "peer-a",
+            .policy =
+                domain::SessionPolicy{
+                    .ingress_bps = 30'000,
+                    .egress_bps = std::nullopt,
+                    .session_timeout = std::nullopt,
+                },
+        });
+    wg_client.snapshots.push(make_snapshot("wg0", {}));
+
+    const auto result = runtime.step();
+
+    EXPECT_EQ(result.executed_commands.size(), 1U);
+    EXPECT_TRUE(result.executed_commands.front().command.policy.has_value());
+    EXPECT_EQ(result.executed_commands.front().command.policy->ingress_bps, std::optional<std::uint64_t>{30'000});
+    EXPECT_EQ(result.executed_commands.front().command.policy->egress_bps, std::optional<std::uint64_t>{20'000});
+    EXPECT_EQ(
+        result.executed_commands.front().command.policy->session_timeout,
+        std::optional<std::chrono::seconds>{std::chrono::seconds{60}});
+}

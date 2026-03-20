@@ -1,5 +1,6 @@
 #pragma once
 
+#include "wg_radius/domain/peer_session.hpp"
 #include "wg_radius/radius/radius_profile.hpp"
 
 #include <optional>
@@ -9,11 +10,13 @@ namespace wg_radius::coa {
 
 enum class RequestType {
     Disconnect,
+    Coa,
 };
 
 struct Request {
     RequestType type;
     std::string peer_public_key;
+    std::optional<domain::SessionPolicy> policy;
 };
 
 class RequestSource {
@@ -43,6 +46,7 @@ public:
 private:
     int fd_{-1};
     std::string shared_secret_;
+    std::optional<std::uint32_t> allowed_sender_ipv4_host_order_;
 };
 
 }  // namespace wg_radius::coa

@@ -89,6 +89,7 @@ public:
     [[nodiscard]] bool accept(SessionPolicy policy, std::string accounting_session_id);
     [[nodiscard]] bool mark_accounting_started(TimePoint now = TimePoint{});
     [[nodiscard]] bool mark_interim_accounting(TimePoint now);
+    [[nodiscard]] bool update_policy(SessionPolicy policy);
     [[nodiscard]] bool begin_accounting_stop(
         AccountingStopReason reason = AccountingStopReason::PeerRemoved);
     [[nodiscard]] bool mark_accounting_stopped();

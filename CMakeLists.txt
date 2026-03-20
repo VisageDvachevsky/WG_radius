@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(PkgConfig REQUIRED)
+find_package(OpenSSL REQUIRED)
 pkg_check_modules(LIBNL REQUIRED IMPORTED_TARGET libnl-3.0 libnl-genl-3.0)
 pkg_check_modules(RADCLI REQUIRED IMPORTED_TARGET radcli)
 
@@ -59,6 +60,7 @@ add_executable(
 target_link_libraries(
     wg_radius_domain
     PRIVATE
+        OpenSSL::Crypto
         PkgConfig::LIBNL
         PkgConfig::RADCLI
 )
@@ -134,6 +136,20 @@ if(WG_RADIUS_ENABLE_INTEGRATION_TESTS)
         wg_radius_phase2_radius_accounting_integration
         PROPERTIES
             LABELS "integration;wireguard;radius;phase2"
+            SKIP_RETURN_CODE 77
+    )
+
+    add_test(
+        NAME wg_radius_phase3_dynamic_control_integration
+        COMMAND
+            ${CMAKE_SOURCE_DIR}/tests/integration/phase3_real_dynamic_control.sh
+            ${CMAKE_BINARY_DIR}/wg_radiusd
+            ${CMAKE_SOURCE_DIR}
+    )
+    set_tests_properties(
+        wg_radius_phase3_dynamic_control_integration
+        PROPERTIES
+            LABELS "integration;wireguard;radius;phase3"
             SKIP_RETURN_CODE 77
     )
 

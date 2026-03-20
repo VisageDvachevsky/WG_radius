@@ -45,6 +45,14 @@ RuntimeStepResult ProfileRuntime::step_at(domain::SessionManager::TimePoint now)
                     session_manager_.on_disconnect_request(request->peer_public_key),
                     executed_commands,
                     now);
+                continue;
+            }
+
+            if (request->type == coa::RequestType::Coa && request->policy.has_value()) {
+                dispatch_commands(
+                    session_manager_.on_coa_request(request->peer_public_key, *request->policy),
+                    executed_commands,
+                    now);
             }
         }
     }

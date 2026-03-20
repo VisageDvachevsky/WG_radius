@@ -51,7 +51,14 @@ public:
         RejectMode reject_mode,
         AccountingPolicy accounting_policy);
 
-    void on_peer_seeded(const std::string& peer_public_key, bool handshake_seen);
+    [[nodiscard]] std::vector<Command> on_peer_seeded(
+        const std::string& peer_public_key,
+        bool handshake_seen,
+        AuthorizationContext context,
+        std::uint64_t latest_handshake_epoch_sec,
+        std::uint64_t transfer_rx_bytes,
+        std::uint64_t transfer_tx_bytes,
+        TimePoint now = TimePoint{});
     void record_snapshot_activity(
         const std::string& peer_public_key,
         std::uint64_t latest_handshake_epoch_sec,

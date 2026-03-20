@@ -136,4 +136,18 @@ if(WG_RADIUS_ENABLE_INTEGRATION_TESTS)
             LABELS "integration;wireguard;radius;phase2"
             SKIP_RETURN_CODE 77
     )
+
+    add_test(
+        NAME wg_radius_global_smoke_integration
+        COMMAND
+            ${CMAKE_SOURCE_DIR}/tests/integration/global_real_smoke.sh
+            ${CMAKE_BINARY_DIR}/wg_radiusd
+            ${CMAKE_SOURCE_DIR}
+    )
+    set_tests_properties(
+        wg_radius_global_smoke_integration
+        PROPERTIES
+            LABELS "integration;wireguard;radius;phase2;global"
+            SKIP_RETURN_CODE 77
+    )
 endif()

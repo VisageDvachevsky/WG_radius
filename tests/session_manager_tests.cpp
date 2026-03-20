@@ -40,6 +40,58 @@ TEST_CASE(session_manager_requests_auth_on_first_handshake_mode) {
     EXPECT_EQ(manager.find_session("peer-a")->state(), SessionState::AuthPending);
 }
 
+TEST_CASE(session_manager_reconciles_seeded_peer_into_auth_in_peer_appearance_mode) {
+    SessionManager manager{AuthorizationTrigger::OnPeerAppearance, RejectMode::RemovePeer};
+
+    const auto commands = manager.on_peer_seeded(
+        "peer-seeded",
+        false,
+        test_context(),
+        0,
+        0,
+        0,
+        std::chrono::steady_clock::time_point{});
+
+    EXPECT_EQ(commands.size(), 1U);
+    EXPECT_EQ(commands.front().type, CommandType::SendAccessRequest);
+    EXPECT_TRUE(commands.front().authorization_context.has_value());
+    EXPECT_EQ(manager.find_session("peer-seeded")->state(), SessionState::AuthPending);
+}
+
+TEST_CASE(session_manager_reconciles_seeded_peer_with_existing_handshake_in_handshake_mode) {
+    SessionManager manager{AuthorizationTrigger::OnFirstHandshake, RejectMode::RemovePeer};
+
+    const auto commands = manager.on_peer_seeded(
+        "peer-seeded",
+        true,
+        test_context(),
+        1710000000,
+        10,
+        20,
+        std::chrono::steady_clock::time_point{});
+
+    EXPECT_EQ(commands.size(), 1U);
+    EXPECT_EQ(commands.front().type, CommandType::SendAccessRequest);
+    EXPECT_EQ(manager.find_session("peer-seeded")->state(), SessionState::AuthPending);
+    EXPECT_TRUE(manager.find_session("peer-seeded")->first_handshake_seen());
+}
+
+TEST_CASE(session_manager_does_not_auth_seeded_peer_without_handshake_in_handshake_mode) {
+    SessionManager manager{AuthorizationTrigger::OnFirstHandshake, RejectMode::RemovePeer};
+
+    const auto commands = manager.on_peer_seeded(
+        "peer-seeded",
+        false,
+        test_context(),
+        0,
+        0,
+        0,
+        std::chrono::steady_clock::time_point{});
+
+    EXPECT_TRUE(commands.empty());
+    EXPECT_EQ(manager.find_session("peer-seeded")->state(), SessionState::Discovered);
+}
+
 TEST_CASE(session_manager_ignores_handshake_for_unknown_peer) {
     SessionManager manager{AuthorizationTrigger::OnFirstHandshake, RejectMode::RemovePeer};
 
@@ -228,6 +280,58 @@ TEST_CASE(session_manager_stops_active_session_when_handshake_and_traffic_are_bo
         commands.front().accounting_context->stop_reason,
         std::optional{AccountingStopReason::InactivityHandshakeAndTraffic});
     EXPECT_EQ(manager.find_session("peer-a")->state(), SessionState::AccountingStopPending);
+}
+
+TEST_CASE(session_manager_stops_active_session_when_handshake_only_strategy_times_out) {
+    SessionManager manager{
+        AuthorizationTrigger::OnPeerAppearance,
+        RejectMode::RemovePeer,
+        {
+            .acct_interim_interval = std::nullopt,
+            .inactive_timeout = 30s,
+            .inactivity_strategy = wg_radius::config::InactivityStrategy::HandshakeOnly,
+        }};
+
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
+    manager.record_snapshot_activity("peer-a", 100, 10, 20, std::chrono::steady_clock::time_point{});
+    EXPECT_EQ(manager.on_access_accept("peer-a", SessionPolicy{}).size(), 2U);
+    EXPECT_TRUE(
+        manager.on_accounting_started("peer-a", std::chrono::steady_clock::time_point{}).empty());
+    manager.record_snapshot_activity("peer-a", 100, 15, 25, std::chrono::steady_clock::time_point{} + 20s);
+
+    const auto commands = manager.on_timer(std::chrono::steady_clock::time_point{} + 31s);
+
+    EXPECT_EQ(commands.size(), 1U);
+    EXPECT_EQ(commands.front().type, CommandType::StopAccounting);
+    EXPECT_EQ(
+        commands.front().accounting_context->stop_reason,
+        std::optional{AccountingStopReason::InactivityHandshake});
+}
+
+TEST_CASE(session_manager_stops_active_session_when_traffic_only_strategy_times_out) {
+    SessionManager manager{
+        AuthorizationTrigger::OnPeerAppearance,
+        RejectMode::RemovePeer,
+        {
+            .acct_interim_interval = std::nullopt,
+            .inactive_timeout = 30s,
+            .inactivity_strategy = wg_radius::config::InactivityStrategy::TrafficOnly,
+        }};
+
+    EXPECT_EQ(manager.on_peer_observed("peer-a", test_context()).size(), 1U);
+    manager.record_snapshot_activity("peer-a", 100, 10, 20, std::chrono::steady_clock::time_point{});
+    EXPECT_EQ(manager.on_access_accept("peer-a", SessionPolicy{}).size(), 2U);
+    EXPECT_TRUE(
+        manager.on_accounting_started("peer-a", std::chrono::steady_clock::time_point{}).empty());
+    manager.record_snapshot_activity("peer-a", 200, 10, 20, std::chrono::steady_clock::time_point{} + 20s);
+
+    const auto commands = manager.on_timer(std::chrono::steady_clock::time_point{} + 31s);
+
+    EXPECT_EQ(commands.size(), 1U);
+    EXPECT_EQ(commands.front().type, CommandType::StopAccounting);
+    EXPECT_EQ(
+        commands.front().accounting_context->stop_reason,
+        std::optional{AccountingStopReason::InactivityTraffic});
 }
 
 TEST_CASE(session_manager_turns_disconnect_request_into_remove_peer_for_present_session) {

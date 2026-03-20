@@ -25,9 +25,9 @@ PollResult WgPollingCoordinator::poll_at(domain::SessionManager::TimePoint now) 
     }
 
     if (!previous_snapshot_.has_value()) {
-        event_router_.seed(*current_snapshot);
+        auto commands = event_router_.seed(*current_snapshot, now);
         previous_snapshot_ = current_snapshot;
-        return {.status = PollStatus::Seeded, .commands = {}};
+        return {.status = PollStatus::Seeded, .commands = std::move(commands)};
     }
 
     std::vector<domain::Command> commands;

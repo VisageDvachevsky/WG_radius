@@ -27,9 +27,41 @@ SessionManager::SessionManager(
       reject_mode_(reject_mode),
       accounting_policy_(std::move(accounting_policy)) {}
 
-void SessionManager::on_peer_seeded(const std::string& peer_public_key, bool handshake_seen) {
+std::vector<Command> SessionManager::on_peer_seeded(
+    const std::string& peer_public_key,
+    bool handshake_seen,
+    AuthorizationContext context,
+    std::uint64_t latest_handshake_epoch_sec,
+    std::uint64_t transfer_rx_bytes,
+    std::uint64_t transfer_tx_bytes,
+    TimePoint now) {
     auto& session = get_or_create_session(peer_public_key);
-    session.seed(handshake_seen);
+    session.update_authorization_context(context.endpoint, context.allowed_ips);
+    session.record_snapshot_activity(
+        latest_handshake_epoch_sec,
+        transfer_rx_bytes,
+        transfer_tx_bytes,
+        now);
+
+    bool should_authorize = false;
+    if (trigger_mode_ == AuthorizationTrigger::OnPeerAppearance) {
+        session.seed(handshake_seen);
+        should_authorize = session.on_peer_observed();
+    } else if (handshake_seen) {
+        should_authorize = session.on_handshake_observed();
+    } else {
+        session.seed(false);
+    }
+
+    if (!should_authorize) {
+        return {};
+    }
+
+    return {{.type = CommandType::SendAccessRequest,
+             .peer_public_key = peer_public_key,
+             .accounting_session_id = std::nullopt,
+             .policy = std::nullopt,
+             .authorization_context = std::move(context)}};
 }
 
 void SessionManager::record_snapshot_activity(

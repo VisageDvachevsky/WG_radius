@@ -101,3 +101,30 @@ TEST_CASE(router_ignores_traffic_only_updates) {
 
     EXPECT_TRUE(commands.empty());
 }
+
+TEST_CASE(router_seed_reconciles_existing_handshaken_peer_into_access_request) {
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnFirstHandshake,
+        domain::RejectMode::RemovePeer};
+    application::WgEventRouter router{manager};
+
+    const auto commands = router.seed({
+        .interface_name = "wg0",
+        .peers =
+            {{
+                "peer-a",
+                {
+                    .public_key = "peer-a",
+                    .endpoint = std::string{"198.51.100.10:12345"},
+                    .allowed_ips = {"10.0.0.2/32"},
+                    .latest_handshake_epoch_sec = 1710000000,
+                    .transfer_rx_bytes = 10,
+                    .transfer_tx_bytes = 20,
+                },
+            }},
+    });
+
+    EXPECT_EQ(commands.size(), 1U);
+    EXPECT_EQ(commands.front().type, domain::CommandType::SendAccessRequest);
+    EXPECT_EQ(commands.front().peer_public_key, "peer-a");
+}

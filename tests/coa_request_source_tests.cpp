@@ -7,13 +7,24 @@
 #include <unistd.h>
 
 #include <chrono>
+#include <cstdint>
 #include <thread>
 
 using namespace wg_radius;
 
+namespace {
+
+std::uint16_t test_port() {
+    const auto ticks = std::chrono::steady_clock::now().time_since_epoch().count();
+    return static_cast<std::uint16_t>(40000 + (ticks % 20000));
+}
+
+}  // namespace
+
 TEST_CASE(udp_coa_request_source_parses_disconnect_datagram_with_matching_secret) {
+    const auto port = test_port();
     coa::UdpRequestSource source{
-        radius::RadiusEndpoint{.host = "127.0.0.1", .port = 37991},
+        radius::RadiusEndpoint{.host = "127.0.0.1", .port = port},
         "secret"};
 
     const int fd = ::socket(AF_INET, SOCK_DGRAM, 0);
@@ -21,7 +32,7 @@ TEST_CASE(udp_coa_request_source_parses_disconnect_datagram_with_matching_secret
 
     sockaddr_in address{};
     address.sin_family = AF_INET;
-    address.sin_port = htons(37991);
+    address.sin_port = htons(port);
     EXPECT_TRUE(inet_pton(AF_INET, "127.0.0.1", &address.sin_addr) == 1);
 
     const char payload[] = "disconnect secret peer-a";

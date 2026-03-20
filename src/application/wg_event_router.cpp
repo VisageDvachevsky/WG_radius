@@ -5,10 +5,22 @@ namespace wg_radius::application {
 WgEventRouter::WgEventRouter(domain::SessionManager& session_manager)
     : session_manager_(session_manager) {}
 
-void WgEventRouter::seed(const wireguard::InterfaceSnapshot& snapshot) {
+std::vector<domain::Command> WgEventRouter::seed(
+    const wireguard::InterfaceSnapshot& snapshot,
+    domain::SessionManager::TimePoint now) {
+    std::vector<domain::Command> commands;
     for (const auto& [public_key, peer] : snapshot.peers) {
-        session_manager_.on_peer_seeded(public_key, peer.latest_handshake_epoch_sec > 0);
+        auto peer_commands = session_manager_.on_peer_seeded(
+            public_key,
+            peer.latest_handshake_epoch_sec > 0,
+            {.endpoint = peer.endpoint, .allowed_ips = peer.allowed_ips},
+            peer.latest_handshake_epoch_sec,
+            peer.transfer_rx_bytes,
+            peer.transfer_tx_bytes,
+            now);
+        commands.insert(commands.end(), peer_commands.begin(), peer_commands.end());
     }
+    return commands;
 }
 
 std::vector<domain::Command> WgEventRouter::handle(

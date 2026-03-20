@@ -144,6 +144,40 @@ TEST_CASE(profile_runtime_submits_auth_commands_from_polling_result) {
     EXPECT_EQ(auth_queue.submitted.front().type, domain::CommandType::SendAccessRequest);
 }
 
+TEST_CASE(profile_runtime_submits_auth_commands_for_seeded_peer_on_startup_reconciliation) {
+    FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnFirstHandshake,
+        domain::RejectMode::RemovePeer};
+    application::WgEventRouter router{manager};
+    application::WgPollingCoordinator coordinator{"wg0", wg_client, router};
+    FakeAuthQueue auth_queue;
+    FakePeerController peer_controller;
+    FakeTrafficShaper traffic_shaper;
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{coordinator, auth_queue, manager, executor};
+
+    wg_client.snapshots.push(make_snapshot(
+        "wg0",
+        {{
+            .public_key = "peer-a",
+            .endpoint = std::make_optional<std::string>("198.51.100.10:12345"),
+            .allowed_ips = {"10.0.0.2/32"},
+            .latest_handshake_epoch_sec = 1710000000,
+            .transfer_rx_bytes = 10,
+            .transfer_tx_bytes = 20,
+        }}));
+
+    const auto result = runtime.step();
+
+    EXPECT_EQ(result.poll_status, application::PollStatus::Seeded);
+    EXPECT_EQ(result.auth_commands_submitted, 1U);
+    EXPECT_EQ(auth_queue.submitted.size(), 1U);
+    EXPECT_EQ(auth_queue.submitted.front().type, domain::CommandType::SendAccessRequest);
+    EXPECT_TRUE(auth_queue.submitted.front().authorization_context.has_value());
+}
+
 TEST_CASE(profile_runtime_executes_follow_up_commands_from_auth_results) {
     FakeWireGuardClient wg_client;
     FakeRadiusClient radius_client;

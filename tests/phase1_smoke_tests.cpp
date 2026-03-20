@@ -376,3 +376,143 @@ TEST_CASE(phase2_smoke_active_peer_emits_interim_then_stops_on_inactivity) {
         radius_client.accounting_requests.back().stop_reason,
         std::optional{domain::AccountingStopReason::InactivityHandshakeAndTraffic});
 }
+
+TEST_CASE(phase2_smoke_startup_reconciliation_authorizes_seeded_handshaken_peer) {
+    using namespace std::chrono_literals;
+
+    FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
+    FakePeerController peer_controller;
+    FakeTrafficShaper traffic_shaper;
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnFirstHandshake,
+        domain::RejectMode::RemovePeer,
+        {
+            .acct_interim_interval = 30s,
+            .inactive_timeout = 60s,
+            .inactivity_strategy = wg_radius::config::InactivityStrategy::HandshakeAndTraffic,
+        }};
+    application::WgEventRouter router{manager};
+    application::WgPollingCoordinator coordinator{"wg0", wg_client, router};
+    application::AuthCommandProcessor auth_processor{"wg0", kRadiusProfile, manager, radius_client};
+    application::AsyncAuthCommandProcessor async_processor{auth_processor};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{coordinator, async_processor, manager, executor};
+
+    wg_client.snapshots.push(make_snapshot(
+        "wg0",
+        {{
+            .public_key = "peer-r",
+            .endpoint = std::string{"198.51.100.40:61000"},
+            .allowed_ips = {"10.0.0.10/32"},
+            .latest_handshake_epoch_sec = 1710000200,
+            .transfer_rx_bytes = 900,
+            .transfer_tx_bytes = 1200,
+        }}));
+    const auto seed_result = runtime.step_at(std::chrono::steady_clock::time_point{});
+
+    EXPECT_EQ(seed_result.poll_status, application::PollStatus::Seeded);
+    EXPECT_EQ(seed_result.auth_commands_submitted, 1U);
+
+    spin_until([&] {
+        wg_client.snapshots.push(make_snapshot(
+            "wg0",
+            {{
+                .public_key = "peer-r",
+                .endpoint = std::string{"198.51.100.40:61000"},
+                .allowed_ips = {"10.0.0.10/32"},
+                .latest_handshake_epoch_sec = 1710000200,
+                .transfer_rx_bytes = 900,
+                .transfer_tx_bytes = 1200,
+            }}));
+        return runtime.step_at(std::chrono::steady_clock::time_point{} + 1s).auth_results_processed == 1U;
+    });
+
+    EXPECT_EQ(radius_client.auth_requests.size(), 1U);
+    EXPECT_EQ(radius_client.accounting_requests.size(), 1U);
+    EXPECT_EQ(radius_client.accounting_requests.front().event_type, radius::AccountingEventType::Start);
+    EXPECT_EQ(radius_client.accounting_requests.front().transfer_rx_bytes, 900U);
+    EXPECT_EQ(radius_client.accounting_requests.front().transfer_tx_bytes, 1200U);
+    EXPECT_TRUE(manager.find_session("peer-r") != nullptr);
+    EXPECT_EQ(manager.find_session("peer-r")->state(), domain::SessionState::Active);
+}
+
+TEST_CASE(phase2_smoke_startup_reconciliation_keeps_inactivity_window_from_seed_snapshot) {
+    using namespace std::chrono_literals;
+
+    FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
+    FakePeerController peer_controller;
+    FakeTrafficShaper traffic_shaper;
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnFirstHandshake,
+        domain::RejectMode::RemovePeer,
+        {
+            .acct_interim_interval = std::nullopt,
+            .inactive_timeout = 60s,
+            .inactivity_strategy = wg_radius::config::InactivityStrategy::HandshakeAndTraffic,
+        }};
+    application::WgEventRouter router{manager};
+    application::WgPollingCoordinator coordinator{"wg0", wg_client, router};
+    application::AuthCommandProcessor auth_processor{"wg0", kRadiusProfile, manager, radius_client};
+    application::AsyncAuthCommandProcessor async_processor{auth_processor};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{coordinator, async_processor, manager, executor};
+
+    wg_client.snapshots.push(make_snapshot(
+        "wg0",
+        {{
+            .public_key = "peer-s",
+            .endpoint = std::string{"198.51.100.50:62000"},
+            .allowed_ips = {"10.0.0.11/32"},
+            .latest_handshake_epoch_sec = 1710000300,
+            .transfer_rx_bytes = 1000,
+            .transfer_tx_bytes = 1100,
+        }}));
+    EXPECT_EQ(runtime.step_at(std::chrono::steady_clock::time_point{}).auth_commands_submitted, 1U);
+
+    spin_until([&] {
+        wg_client.snapshots.push(make_snapshot(
+            "wg0",
+            {{
+                .public_key = "peer-s",
+                .endpoint = std::string{"198.51.100.50:62000"},
+                .allowed_ips = {"10.0.0.11/32"},
+                .latest_handshake_epoch_sec = 1710000300,
+                .transfer_rx_bytes = 1000,
+                .transfer_tx_bytes = 1100,
+            }}));
+        return runtime.step_at(std::chrono::steady_clock::time_point{} + 1s).auth_results_processed == 1U;
+    });
+
+    wg_client.snapshots.push(make_snapshot(
+        "wg0",
+        {{
+            .public_key = "peer-s",
+            .endpoint = std::string{"198.51.100.50:62000"},
+            .allowed_ips = {"10.0.0.11/32"},
+            .latest_handshake_epoch_sec = 1710000300,
+            .transfer_rx_bytes = 1000,
+            .transfer_tx_bytes = 1100,
+        }}));
+    EXPECT_TRUE(
+        runtime.step_at(std::chrono::steady_clock::time_point{} + 30s).executed_commands.empty());
+
+    wg_client.snapshots.push(make_snapshot(
+        "wg0",
+        {{
+            .public_key = "peer-s",
+            .endpoint = std::string{"198.51.100.50:62000"},
+            .allowed_ips = {"10.0.0.11/32"},
+            .latest_handshake_epoch_sec = 1710000300,
+            .transfer_rx_bytes = 1000,
+            .transfer_tx_bytes = 1100,
+        }}));
+    EXPECT_EQ(
+        runtime.step_at(std::chrono::steady_clock::time_point{} + 61s).executed_commands.size(),
+        1U);
+    EXPECT_EQ(radius_client.accounting_requests.back().event_type, radius::AccountingEventType::Stop);
+    EXPECT_EQ(
+        radius_client.accounting_requests.back().stop_reason,
+        std::optional{domain::AccountingStopReason::InactivityHandshakeAndTraffic});
+}

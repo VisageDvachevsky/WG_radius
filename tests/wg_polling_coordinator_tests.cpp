@@ -61,7 +61,7 @@ TEST_CASE(polling_coordinator_fetches_requested_interface) {
 TEST_CASE(polling_coordinator_seeds_initial_snapshot_without_commands) {
     FakeWireGuardClient client;
     domain::SessionManager manager{
-        domain::AuthorizationTrigger::OnPeerAppearance,
+        domain::AuthorizationTrigger::OnFirstHandshake,
         domain::RejectMode::RemovePeer};
     application::WgEventRouter router{manager};
     application::WgPollingCoordinator coordinator{"wg0", client, router};
@@ -81,6 +81,58 @@ TEST_CASE(polling_coordinator_seeds_initial_snapshot_without_commands) {
 
     EXPECT_EQ(result.status, application::PollStatus::Seeded);
     EXPECT_TRUE(result.commands.empty());
+}
+
+TEST_CASE(polling_coordinator_reconciles_seeded_peer_into_access_request_for_peer_appearance_mode) {
+    FakeWireGuardClient client;
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnPeerAppearance,
+        domain::RejectMode::RemovePeer};
+    application::WgEventRouter router{manager};
+    application::WgPollingCoordinator coordinator{"wg0", client, router};
+
+    client.snapshots.push_back(make_snapshot(
+        "wg0",
+        {{
+            .public_key = "peer-a",
+            .endpoint = std::make_optional<std::string>("198.51.100.10:12345"),
+            .allowed_ips = {"10.0.0.2/32"},
+            .latest_handshake_epoch_sec = 0,
+            .transfer_rx_bytes = 0,
+            .transfer_tx_bytes = 0,
+        }}));
+
+    const auto result = coordinator.poll();
+
+    EXPECT_EQ(result.status, application::PollStatus::Seeded);
+    EXPECT_EQ(result.commands.size(), 1U);
+    EXPECT_EQ(result.commands.front().type, domain::CommandType::SendAccessRequest);
+}
+
+TEST_CASE(polling_coordinator_reconciles_seeded_handshaken_peer_into_access_request_for_handshake_mode) {
+    FakeWireGuardClient client;
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnFirstHandshake,
+        domain::RejectMode::RemovePeer};
+    application::WgEventRouter router{manager};
+    application::WgPollingCoordinator coordinator{"wg0", client, router};
+
+    client.snapshots.push_back(make_snapshot(
+        "wg0",
+        {{
+            .public_key = "peer-a",
+            .endpoint = std::make_optional<std::string>("198.51.100.10:12345"),
+            .allowed_ips = {"10.0.0.2/32"},
+            .latest_handshake_epoch_sec = 1710000000,
+            .transfer_rx_bytes = 10,
+            .transfer_tx_bytes = 20,
+        }}));
+
+    const auto result = coordinator.poll();
+
+    EXPECT_EQ(result.status, application::PollStatus::Seeded);
+    EXPECT_EQ(result.commands.size(), 1U);
+    EXPECT_EQ(result.commands.front().type, domain::CommandType::SendAccessRequest);
 }
 
 TEST_CASE(polling_coordinator_emits_access_request_for_runtime_handshake_after_seed) {
@@ -172,13 +224,10 @@ TEST_CASE(polling_coordinator_turns_peer_removal_into_stop_accounting_after_acti
             .transfer_rx_bytes = 0,
             .transfer_tx_bytes = 0,
         }}));
-    EXPECT_EQ(coordinator.poll().status, application::PollStatus::Seeded);
-    EXPECT_EQ(
-        manager.on_peer_observed(
-            "peer-a",
-            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
-            .size(),
-        1U);
+    const auto seed_result = coordinator.poll();
+    EXPECT_EQ(seed_result.status, application::PollStatus::Seeded);
+    EXPECT_EQ(seed_result.commands.size(), 1U);
+    EXPECT_EQ(seed_result.commands.front().type, domain::CommandType::SendAccessRequest);
     EXPECT_EQ(manager.on_access_accept("peer-a", domain::SessionPolicy{}).size(), 2U);
     EXPECT_TRUE(manager.on_accounting_started("peer-a").empty());
 

@@ -14,7 +14,7 @@ if [[ -z "${WG_RADIUS_IT_SUDO_PASSWORD:-}" ]]; then
     exit 77
 fi
 
-for required in ip wg docker mktemp stdbuf grep timeout ping awk bash python3; do
+for required in ip wg docker mktemp stdbuf grep timeout ping awk bash python3 tc; do
     if ! command -v "$required" >/dev/null 2>&1; then
         echo "missing required command: $required" >&2
         exit 77
@@ -64,6 +64,29 @@ wait_for_count() {
     local delay=${5:-0.1}
 
     wait_for_condition "[[ -f '$file' ]] && [[ \$(grep -c -- \"$pattern\" '$file') -ge $expected ]]" "$attempts" "$delay"
+}
+
+wait_for_command_output_change() {
+    local snapshot_file=$1
+    local command=$2
+    local pattern=$3
+    local attempts=${4:-160}
+    local delay=${5:-0.1}
+    local snapshot
+    snapshot=$(cat "$snapshot_file")
+
+    for _ in $(seq 1 "$attempts"); do
+        local current
+        current=$(eval "$command" 2>/dev/null || true)
+        if [[ "$current" != "$snapshot" ]] && grep -q -- "$pattern" <<<"$current"; then
+            return 0
+        fi
+        sleep "$delay"
+    done
+
+    echo "command output did not change as expected: $command" >&2
+    dump_diagnostics
+    return 1
 }
 
 send_radius_packet() {
@@ -378,13 +401,17 @@ for cycle in $(seq 1 "$cycles"); do
     wait_for_count "accounting user=$accept_public_key status=Start" "$radius_log" "$cycle" 120 0.1
     apply_expected=$((apply_expected + 1))
     wait_for_count "executed_command type=ApplySessionPolicy peer=$accept_public_key status=Executed" "$daemon_log" "$apply_expected" 120 0.1
+    wait_for_condition "sudo_pw tc filter show dev '$iface_name' parent 1: | grep -q '$client_wg_ip'" 120 0.1
+    wait_for_condition "sudo_pw tc filter show dev '$iface_name' parent ffff: | grep -q '$client_wg_ip'" 120 0.1
 
     sudo_pw ip netns exec "$client_ns" ping -c 1 -W 2 10.60.0.1 >/dev/null
     wait_for_condition "sudo_pw wg show '$iface_name' latest-handshakes | grep '$accept_public_key' | awk '{print \$2}' | grep -qv '^0$'" 80 0.1
 
-    send_radius_packet coa "$radius_secret" "$accept_public_key" ingress_bps=$((55000 + cycle))
+    sudo_pw tc class show dev "$iface_name" >"$tmp_dir/tc-class-cycle-$cycle.txt"
+    send_radius_packet coa "$radius_secret" "$accept_public_key" ingress_bps=$((55000 + cycle)) egress_bps=$((33000 + cycle))
     apply_expected=$((apply_expected + 1))
     wait_for_count "executed_command type=ApplySessionPolicy peer=$accept_public_key status=Executed" "$daemon_log" "$apply_expected" 120 0.1
+    wait_for_command_output_change "$tmp_dir/tc-class-cycle-$cycle.txt" "sudo_pw tc class show dev '$iface_name'" "class htb 1:" 120 0.1
 
     send_radius_packet disconnect "$radius_secret" "$accept_public_key"
     wait_for_count "executed_command type=BlockPeer peer=$accept_public_key status=Executed" "$daemon_log" "$cycle" 120 0.1
@@ -403,6 +430,8 @@ for cycle in $(seq 1 "$cycles"); do
         dump_diagnostics
         exit 1
     fi
+    wait_for_condition "! sudo_pw tc filter show dev '$iface_name' parent 1: | grep -q '$client_wg_ip'" 120 0.1
+    wait_for_condition "! sudo_pw tc filter show dev '$iface_name' parent ffff: | grep -q '$client_wg_ip'" 120 0.1
 
     stop_daemon
     ensure_server_peer

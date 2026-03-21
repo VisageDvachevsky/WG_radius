@@ -195,7 +195,7 @@ bool PeerSession::mark_accounting_stopped() {
 }
 
 bool PeerSession::begin_block() {
-    if (state_ != SessionState::AuthPending) {
+    if (state_ != SessionState::AuthPending && state_ != SessionState::AccountingStartPending) {
         return false;
     }
 
@@ -218,7 +218,7 @@ bool PeerSession::mark_blocked() {
 }
 
 bool PeerSession::begin_removal() {
-    if (state_ != SessionState::AuthPending) {
+    if (state_ != SessionState::AuthPending && state_ != SessionState::AccountingStartPending) {
         return false;
     }
 

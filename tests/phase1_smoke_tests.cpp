@@ -63,9 +63,23 @@ public:
 class FakeTrafficShaper final : public shaping::TrafficShaper {
 public:
     std::vector<std::string> shaped_peers;
+    int remove_calls{0};
+    bool next_apply_result{true};
 
-    bool apply_policy(const std::string&, const std::string& peer_public_key, const domain::SessionPolicy&) override {
+    bool apply_policy(
+        const std::string&,
+        const std::string& peer_public_key,
+        const std::vector<std::string>&,
+        const domain::SessionPolicy&) override {
+        if (!next_apply_result) {
+            return false;
+        }
         shaped_peers.push_back(peer_public_key);
+        return true;
+    }
+
+    bool remove_policy(const std::string&, const std::string&) override {
+        ++remove_calls;
         return true;
     }
 };
@@ -815,4 +829,55 @@ TEST_CASE(phase3_smoke_partial_coa_preserves_existing_policy_fields) {
     EXPECT_EQ(
         coa_result.executed_commands.front().command.policy->session_timeout,
         std::optional<std::chrono::seconds>{std::chrono::seconds{60}});
+}
+
+TEST_CASE(phase4_smoke_failed_initial_shaping_rolls_back_and_prevents_accounting_start) {
+    FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
+    FakePeerController peer_controller;
+    FakeTrafficShaper traffic_shaper;
+    traffic_shaper.next_apply_result = false;
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnPeerAppearance,
+        domain::RejectMode::RemovePeer};
+    application::WgEventRouter router{manager};
+    application::WgPollingCoordinator coordinator{"wg0", wg_client, router};
+    application::AuthCommandProcessor auth_processor{"wg0", kRadiusProfile, manager, radius_client};
+    application::AsyncAuthCommandProcessor async_processor{auth_processor};
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{coordinator, async_processor, manager, executor};
+
+    wg_client.snapshots.push(make_snapshot("wg0", {}));
+    EXPECT_EQ(runtime.step().poll_status, application::PollStatus::Seeded);
+
+    wg_client.snapshots.push(make_snapshot(
+        "wg0",
+        {{
+            .public_key = "peer-phase4",
+            .endpoint = std::string{"198.51.100.80:65000"},
+            .allowed_ips = {"10.0.0.20/32"},
+            .latest_handshake_epoch_sec = 1710000600,
+            .transfer_rx_bytes = 100,
+            .transfer_tx_bytes = 200,
+        }}));
+    EXPECT_EQ(runtime.step().auth_commands_submitted, 1U);
+
+    spin_until([&] {
+        wg_client.snapshots.push(make_snapshot(
+            "wg0",
+            {{
+                .public_key = "peer-phase4",
+                .endpoint = std::string{"198.51.100.80:65000"},
+                .allowed_ips = {"10.0.0.20/32"},
+                .latest_handshake_epoch_sec = 1710000600,
+                .transfer_rx_bytes = 100,
+                .transfer_tx_bytes = 200,
+            }}));
+        const auto result = runtime.step();
+        return result.auth_results_processed == 1U;
+    });
+
+    EXPECT_TRUE(radius_client.accounting_requests.empty());
+    EXPECT_EQ(peer_controller.removed_peers.size(), 1U);
+    EXPECT_EQ(peer_controller.removed_peers.front(), "peer-phase4");
 }

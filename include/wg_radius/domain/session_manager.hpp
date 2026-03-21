@@ -79,6 +79,10 @@ public:
     [[nodiscard]] std::vector<Command> on_coa_request(
         const std::string& peer_public_key,
         SessionPolicy policy);
+    [[nodiscard]] std::vector<Command> on_policy_applied(
+        const std::string& peer_public_key,
+        SessionPolicy policy);
+    [[nodiscard]] std::vector<Command> on_policy_application_failed(const std::string& peer_public_key);
     [[nodiscard]] std::vector<Command> on_accounting_started(
         const std::string& peer_public_key,
         TimePoint now = TimePoint{});

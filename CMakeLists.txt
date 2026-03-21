@@ -29,6 +29,7 @@ add_library(
     src/application/wg_polling_coordinator.cpp
     src/application/wg_event_router.cpp
     src/shaping/noop_traffic_shaper.cpp
+    src/shaping/tc_traffic_shaper.cpp
     src/wireguard/netlink_peer_controller.cpp
     src/wireguard/netlink_wireguard_client.cpp
     src/wireguard/wg_snapshot.cpp
@@ -52,6 +53,7 @@ add_executable(
     tests/phase1_smoke_tests.cpp
     tests/profile_runtime_tests.cpp
     tests/session_manager_tests.cpp
+    tests/tc_traffic_shaper_tests.cpp
     tests/wg_event_router_tests.cpp
     tests/wg_polling_coordinator_tests.cpp
     tests/wg_snapshot_tests.cpp
@@ -164,6 +166,34 @@ if(WG_RADIUS_ENABLE_INTEGRATION_TESTS)
         wg_radius_phase3_soak_integration
         PROPERTIES
             LABELS "integration;wireguard;radius;phase3;soak"
+            SKIP_RETURN_CODE 77
+    )
+
+    add_test(
+        NAME wg_radius_phase4_shaping_integration
+        COMMAND
+            ${CMAKE_SOURCE_DIR}/tests/integration/phase3_real_dynamic_control.sh
+            ${CMAKE_BINARY_DIR}/wg_radiusd
+            ${CMAKE_SOURCE_DIR}
+    )
+    set_tests_properties(
+        wg_radius_phase4_shaping_integration
+        PROPERTIES
+            LABELS "integration;wireguard;radius;phase4"
+            SKIP_RETURN_CODE 77
+    )
+
+    add_test(
+        NAME wg_radius_phase4_soak_integration
+        COMMAND
+            ${CMAKE_SOURCE_DIR}/tests/integration/phase3_real_soak.sh
+            ${CMAKE_BINARY_DIR}/wg_radiusd
+            ${CMAKE_SOURCE_DIR}
+    )
+    set_tests_properties(
+        wg_radius_phase4_soak_integration
+        PROPERTIES
+            LABELS "integration;wireguard;radius;phase4;soak"
             SKIP_RETURN_CODE 77
     )
 

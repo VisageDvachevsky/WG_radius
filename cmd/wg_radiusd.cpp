@@ -8,7 +8,7 @@
 #include "wg_radius/config/config_parser.hpp"
 #include "wg_radius/domain/session_manager.hpp"
 #include "wg_radius/radius/radcli_radius_client.hpp"
-#include "wg_radius/shaping/noop_traffic_shaper.hpp"
+#include "wg_radius/shaping/tc_traffic_shaper.hpp"
 #include "wg_radius/wireguard/netlink_peer_controller.hpp"
 #include "wg_radius/wireguard/netlink_wireguard_client.hpp"
 
@@ -71,7 +71,7 @@ struct RuntimeContext {
     wg_radius::coa::UdpRequestSource coa_request_source;
     wg_radius::wireguard::NetlinkWireGuardClient wireguard_client;
     wg_radius::wireguard::NetlinkPeerController peer_controller;
-    wg_radius::shaping::NoopTrafficShaper traffic_shaper;
+    wg_radius::shaping::TcTrafficShaper traffic_shaper;
     wg_radius::radius::RadcliRadiusClient radius_client;
     wg_radius::application::WgEventRouter event_router;
     wg_radius::application::WgPollingCoordinator polling_coordinator;

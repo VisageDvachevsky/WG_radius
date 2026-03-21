@@ -16,20 +16,29 @@ CommandExecutionResult CommandExecutor::execute(const domain::Command& command) 
     switch (command.type) {
         case domain::CommandType::RemovePeer: {
             const bool ok = peer_controller_.remove_peer(interface_name_, command.peer_public_key);
-            return {.command = command, .status = ok ? CommandExecutionStatus::Executed
-                                                     : CommandExecutionStatus::Failed};
+            const bool shaping_ok = ok
+                ? traffic_shaper_.remove_policy(interface_name_, command.peer_public_key)
+                : false;
+            return {.command = command, .status = (ok && shaping_ok) ? CommandExecutionStatus::Executed
+                                                                     : CommandExecutionStatus::Failed};
         }
         case domain::CommandType::BlockPeer: {
             const bool ok = peer_controller_.remove_peer(interface_name_, command.peer_public_key);
-            return {.command = command, .status = ok ? CommandExecutionStatus::Executed
-                                                     : CommandExecutionStatus::Failed};
+            const bool shaping_ok = ok
+                ? traffic_shaper_.remove_policy(interface_name_, command.peer_public_key)
+                : false;
+            return {.command = command, .status = (ok && shaping_ok) ? CommandExecutionStatus::Executed
+                                                                     : CommandExecutionStatus::Failed};
         }
         case domain::CommandType::ApplySessionPolicy: {
-            if (!command.policy.has_value()) {
+            if (!command.policy.has_value() || !command.authorization_context.has_value()) {
                 return {.command = command, .status = CommandExecutionStatus::Failed};
             }
-            const bool ok =
-                traffic_shaper_.apply_policy(interface_name_, command.peer_public_key, *command.policy);
+            const bool ok = traffic_shaper_.apply_policy(
+                interface_name_,
+                command.peer_public_key,
+                command.authorization_context->allowed_ips,
+                *command.policy);
             return {.command = command, .status = ok ? CommandExecutionStatus::Executed
                                                      : CommandExecutionStatus::Failed};
         }
@@ -69,8 +78,12 @@ CommandExecutionResult CommandExecutor::execute(const domain::Command& command) 
                 .transfer_tx_bytes = accounting_context.transfer_tx_bytes,
                 .stop_reason = accounting_context.stop_reason,
             });
-            return {.command = command, .status = ok ? CommandExecutionStatus::Executed
-                                                     : CommandExecutionStatus::Failed};
+            const bool shaping_ok =
+                (command.type == domain::CommandType::StopAccounting && ok)
+                ? traffic_shaper_.remove_policy(interface_name_, command.peer_public_key)
+                : ok;
+            return {.command = command, .status = (ok && shaping_ok) ? CommandExecutionStatus::Executed
+                                                                     : CommandExecutionStatus::Failed};
         }
         case domain::CommandType::SendAccessRequest:
             return {.command = command, .status = CommandExecutionStatus::Ignored};

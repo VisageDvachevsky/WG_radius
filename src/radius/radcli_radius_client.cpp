@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <arpa/inet.h>
 #include <iostream>
 #include <limits>
@@ -209,6 +210,11 @@ bool RadcliRadiusClient::create_servers_file() {
     if (fd == -1) {
         return false;
     }
+    if (fchmod(fd, S_IRUSR | S_IWUSR) != 0) {
+        close(fd);
+        std::remove(path_template.data());
+        return false;
+    }
 
     servers_file_path_ = path_template.data();
     std::set<std::string> hosts{profile_.auth_server.host, profile_.accounting_server.host};
@@ -350,6 +356,8 @@ bool RadcliRadiusClient::account(const AccountingRequest& request) {
         }
     }
 
+    // Classic RADIUS accounting uses 32-bit octet counters. We clamp here until
+    // Acct-Input/Output-Gigawords support is added.
     const auto rx_octets = static_cast<std::uint32_t>(
         std::min<std::uint64_t>(request.transfer_rx_bytes, std::numeric_limits<std::uint32_t>::max()));
     const auto tx_octets = static_cast<std::uint32_t>(

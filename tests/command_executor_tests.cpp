@@ -51,17 +51,30 @@ public:
     bool next_result{true};
     std::string last_interface_name;
     std::string last_peer_public_key;
+    std::vector<std::string> last_allowed_ips;
     std::optional<domain::SessionPolicy> last_policy;
     int apply_calls{0};
+    int remove_calls{0};
 
     bool apply_policy(
         const std::string& interface_name,
         const std::string& peer_public_key,
+        const std::vector<std::string>& allowed_ips,
         const domain::SessionPolicy& policy) override {
         last_interface_name = interface_name;
         last_peer_public_key = peer_public_key;
+        last_allowed_ips = allowed_ips;
         last_policy = policy;
         ++apply_calls;
+        return next_result;
+    }
+
+    bool remove_policy(
+        const std::string& interface_name,
+        const std::string& peer_public_key) override {
+        last_interface_name = interface_name;
+        last_peer_public_key = peer_public_key;
+        ++remove_calls;
         return next_result;
     }
 };
@@ -116,6 +129,7 @@ TEST_CASE(command_executor_executes_apply_session_policy_via_traffic_shaper) {
         .peer_public_key = "peer-a",
         .accounting_session_id = std::string{"sess-1"},
         .policy = domain::SessionPolicy{.ingress_bps = 1000, .egress_bps = 2000, .session_timeout = std::nullopt},
+        .authorization_context = domain::AuthorizationContext{.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}},
     });
 
     EXPECT_EQ(result.status, application::CommandExecutionStatus::Executed);
@@ -123,6 +137,8 @@ TEST_CASE(command_executor_executes_apply_session_policy_via_traffic_shaper) {
     EXPECT_EQ(traffic_shaper.apply_calls, 1);
     EXPECT_EQ(traffic_shaper.last_interface_name, "wg0");
     EXPECT_EQ(traffic_shaper.last_peer_public_key, "peer-a");
+    EXPECT_EQ(traffic_shaper.last_allowed_ips.size(), 1U);
+    EXPECT_EQ(traffic_shaper.last_allowed_ips.front(), "10.0.0.2/32");
 }
 
 TEST_CASE(command_executor_executes_command_batch_in_order) {
@@ -141,6 +157,7 @@ TEST_CASE(command_executor_executes_command_batch_in_order) {
     EXPECT_EQ(results.at(0).status, application::CommandExecutionStatus::Ignored);
     EXPECT_EQ(results.at(1).status, application::CommandExecutionStatus::Executed);
     EXPECT_EQ(peer_controller.remove_calls, 1);
+    EXPECT_EQ(traffic_shaper.remove_calls, 1);
     EXPECT_EQ(peer_controller.last_peer_public_key, "peer-b");
 }
 
@@ -208,6 +225,7 @@ TEST_CASE(command_executor_must_execute_stop_accounting_instead_of_ignoring_it) 
 
     EXPECT_EQ(result.status, application::CommandExecutionStatus::Executed);
     EXPECT_EQ(radius_client.account_calls, 1);
+    EXPECT_EQ(traffic_shaper.remove_calls, 1);
     EXPECT_TRUE(radius_client.last_request.has_value());
     EXPECT_EQ(radius_client.last_request->event_type, radius::AccountingEventType::Stop);
     EXPECT_EQ(radius_client.last_request->stop_reason, std::optional{domain::AccountingStopReason::PeerRemoved});

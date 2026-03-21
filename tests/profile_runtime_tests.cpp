@@ -61,9 +61,20 @@ public:
 class FakeTrafficShaper final : public shaping::TrafficShaper {
 public:
     int apply_calls{0};
+    int remove_calls{0};
+    bool next_apply_result{true};
 
-    bool apply_policy(const std::string&, const std::string&, const domain::SessionPolicy&) override {
+    bool apply_policy(
+        const std::string&,
+        const std::string&,
+        const std::vector<std::string>&,
+        const domain::SessionPolicy&) override {
         ++apply_calls;
+        return next_apply_result;
+    }
+
+    bool remove_policy(const std::string&, const std::string&) override {
+        ++remove_calls;
         return true;
     }
 };
@@ -207,6 +218,7 @@ TEST_CASE(profile_runtime_executes_follow_up_commands_from_auth_results) {
                     .peer_public_key = "peer-a",
                     .accounting_session_id = std::string{"sess-1"},
                     .policy = domain::SessionPolicy{.ingress_bps = 1000, .egress_bps = std::nullopt, .session_timeout = std::nullopt},
+                    .authorization_context = domain::AuthorizationContext{.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}},
                 },
                 {
                     .type = domain::CommandType::RemovePeer,
@@ -575,5 +587,110 @@ TEST_CASE(profile_runtime_merges_partial_coa_request_into_existing_policy_before
     EXPECT_EQ(result.executed_commands.front().command.policy->egress_bps, std::optional<std::uint64_t>{20'000});
     EXPECT_EQ(
         result.executed_commands.front().command.policy->session_timeout,
+        std::optional<std::chrono::seconds>{std::chrono::seconds{60}});
+}
+
+TEST_CASE(profile_runtime_policy_application_failure_prevents_accounting_start_and_removes_peer) {
+    FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnPeerAppearance,
+        domain::RejectMode::RemovePeer};
+    application::WgEventRouter router{manager};
+    application::WgPollingCoordinator coordinator{"wg0", wg_client, router};
+    FakeAuthQueue auth_queue;
+    FakePeerController peer_controller;
+    FakeTrafficShaper traffic_shaper;
+    traffic_shaper.next_apply_result = false;
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{coordinator, auth_queue, manager, executor};
+
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
+
+    auth_queue.results.push({
+        .command = {
+            .type = domain::CommandType::SendAccessRequest,
+            .peer_public_key = "peer-a",
+        },
+        .status = application::AuthProcessingStatus::Processed,
+        .follow_up_commands = manager.on_access_accept(
+            "peer-a",
+            {.ingress_bps = 10'000, .egress_bps = 20'000, .session_timeout = std::nullopt}),
+    });
+    wg_client.snapshots.push(make_snapshot("wg0", {}));
+
+    const auto result = runtime.step();
+
+    EXPECT_EQ(result.auth_results_processed, 1U);
+    EXPECT_EQ(result.executed_commands.size(), 2U);
+    EXPECT_EQ(result.executed_commands.front().command.type, domain::CommandType::ApplySessionPolicy);
+    EXPECT_EQ(result.executed_commands.front().status, application::CommandExecutionStatus::Failed);
+    EXPECT_EQ(result.executed_commands.back().command.type, domain::CommandType::RemovePeer);
+    EXPECT_EQ(result.executed_commands.back().status, application::CommandExecutionStatus::Executed);
+    EXPECT_TRUE(radius_client.accounting_requests.empty());
+}
+
+TEST_CASE(profile_runtime_failed_coa_reapply_keeps_previous_policy) {
+    FakeWireGuardClient wg_client;
+    FakeRadiusClient radius_client;
+    domain::SessionManager manager{
+        domain::AuthorizationTrigger::OnPeerAppearance,
+        domain::RejectMode::RemovePeer};
+    application::WgEventRouter router{manager};
+    application::WgPollingCoordinator coordinator{"wg0", wg_client, router};
+    FakeAuthQueue auth_queue;
+    FakePeerController peer_controller;
+    FakeTrafficShaper traffic_shaper;
+    FakeCoaRequestSource coa_source;
+    application::CommandExecutor executor{"wg0", radius_client, peer_controller, traffic_shaper};
+    application::ProfileRuntime runtime{
+        coordinator,
+        auth_queue,
+        manager,
+        executor,
+        &coa_source};
+
+    EXPECT_EQ(
+        manager.on_peer_observed(
+            "peer-a",
+            {.endpoint = std::nullopt, .allowed_ips = {"10.0.0.2/32"}})
+            .size(),
+        1U);
+    EXPECT_EQ(
+        manager.on_access_accept(
+            "peer-a",
+            {.ingress_bps = 10'000, .egress_bps = 20'000, .session_timeout = std::chrono::seconds{60}})
+            .size(),
+        2U);
+    EXPECT_TRUE(manager.on_accounting_started("peer-a").empty());
+
+    traffic_shaper.next_apply_result = false;
+    coa_source.requests.push(
+        {
+            .type = coa::RequestType::Coa,
+            .peer_public_key = "peer-a",
+            .policy =
+                domain::SessionPolicy{
+                    .ingress_bps = 30'000,
+                    .egress_bps = 40'000,
+                    .session_timeout = std::chrono::seconds{120},
+                },
+        });
+    wg_client.snapshots.push(make_snapshot("wg0", {}));
+
+    const auto result = runtime.step();
+
+    EXPECT_EQ(result.executed_commands.size(), 1U);
+    EXPECT_EQ(result.executed_commands.front().command.type, domain::CommandType::ApplySessionPolicy);
+    EXPECT_EQ(result.executed_commands.front().status, application::CommandExecutionStatus::Failed);
+    EXPECT_EQ(manager.find_session("peer-a")->applied_policy()->ingress_bps, std::optional<std::uint64_t>{10'000});
+    EXPECT_EQ(manager.find_session("peer-a")->applied_policy()->egress_bps, std::optional<std::uint64_t>{20'000});
+    EXPECT_EQ(
+        manager.find_session("peer-a")->applied_policy()->session_timeout,
         std::optional<std::chrono::seconds>{std::chrono::seconds{60}});
 }

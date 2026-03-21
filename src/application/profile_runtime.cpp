@@ -1,5 +1,7 @@
 #include "wg_radius/application/profile_runtime.hpp"
 
+#include <algorithm>
+
 namespace wg_radius::application {
 
 ProfileRuntime::ProfileRuntime(
@@ -73,10 +75,10 @@ std::size_t ProfileRuntime::dispatch_commands(
     domain::SessionManager::TimePoint now) {
     std::size_t auth_commands_submitted = 0;
     std::vector<domain::Command> pending_commands = commands;
+    std::size_t next_command_index = 0;
 
-    while (!pending_commands.empty()) {
-        auto command = std::move(pending_commands.front());
-        pending_commands.erase(pending_commands.begin());
+    while (next_command_index < pending_commands.size()) {
+        auto command = std::move(pending_commands[next_command_index++]);
 
         if (command.type == domain::CommandType::SendAccessRequest) {
             auth_command_queue_.submit(command);
@@ -85,6 +87,18 @@ std::size_t ProfileRuntime::dispatch_commands(
         }
 
         auto execution_result = command_executor_.execute(command);
+        if (execution_result.command.type == domain::CommandType::ApplySessionPolicy &&
+            execution_result.status == CommandExecutionStatus::Failed) {
+            pending_commands.erase(
+                std::remove_if(
+                    pending_commands.begin() + static_cast<std::ptrdiff_t>(next_command_index),
+                    pending_commands.end(),
+                    [&](const domain::Command& pending_command) {
+                        return pending_command.type == domain::CommandType::StartAccounting &&
+                            pending_command.peer_public_key == execution_result.command.peer_public_key;
+                    }),
+                pending_commands.end());
+        }
         auto follow_up_commands = on_command_executed(execution_result, now);
         executed_commands.push_back(std::move(execution_result));
         pending_commands.insert(
@@ -100,10 +114,20 @@ std::vector<domain::Command> ProfileRuntime::on_command_executed(
     const CommandExecutionResult& execution_result,
     domain::SessionManager::TimePoint now) {
     if (execution_result.status != CommandExecutionStatus::Executed) {
+        if (execution_result.command.type == domain::CommandType::ApplySessionPolicy) {
+            return session_manager_.on_policy_application_failed(execution_result.command.peer_public_key);
+        }
         return {};
     }
 
     switch (execution_result.command.type) {
+        case domain::CommandType::ApplySessionPolicy:
+            if (!execution_result.command.policy.has_value()) {
+                return {};
+            }
+            return session_manager_.on_policy_applied(
+                execution_result.command.peer_public_key,
+                *execution_result.command.policy);
         case domain::CommandType::StartAccounting:
             return session_manager_.on_accounting_started(execution_result.command.peer_public_key, now);
         case domain::CommandType::InterimAccounting:
@@ -113,7 +137,6 @@ std::vector<domain::Command> ProfileRuntime::on_command_executed(
         case domain::CommandType::BlockPeer:
             return session_manager_.on_peer_blocked(execution_result.command.peer_public_key);
         case domain::CommandType::SendAccessRequest:
-        case domain::CommandType::ApplySessionPolicy:
             return {};
         case domain::CommandType::RemovePeer:
             return session_manager_.on_peer_removed(execution_result.command.peer_public_key, now);
